@@ -145,16 +145,9 @@ class SectionPlugin(Generic[M]):
         """
         Load a plugin from a pre-parsed entry point
 
-        Parses the following options:
-
-        ``required``
-            If present implies ``required=True``.
-
-        ``before=other``
-            This plugin must be processed before ``other``.
-
-        ``after=other``
-            This plugin must be processed after ``other``.
+        The entry point name is used as the configuration ``section`` to digest
+        by the entry point target. Additional metadata may be provided by decorating
+        the target implementation with :py:func:`cobald.daemon.plugins.constraints`.
         """
         digest = entry_point.load()
         requirements = getattr(digest, "__requirements__", PluginRequirements())
@@ -206,6 +199,8 @@ def load_configuration(
                     where="root", what="missing section %r" % plugin.section
                 )
         else:
+            if plugin.requirements.schema is not None:
+                section_data = plugin.requirements.schema(section_data)
             # invoke the plugin and store possible output
             # to avoid it being garbage collected
             plugin_content = plugin.digest(section_data)
