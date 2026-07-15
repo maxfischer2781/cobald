@@ -4,7 +4,6 @@ from typing import Dict, Set, Union, Any, TypeVar
 
 from .format_json import RECORD_ATTRIBUTES
 
-
 T = TypeVar("T")
 
 

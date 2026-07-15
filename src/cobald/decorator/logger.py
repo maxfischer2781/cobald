@@ -4,7 +4,6 @@ import warnings
 
 from cobald.interfaces import Pool, PoolDecorator
 
-
 _DEFAULT_MESSAGE = (
     "demand = %(value)s "
     "[demand=%(demand)s, supply=%(supply)s, "

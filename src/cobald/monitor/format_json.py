@@ -2,7 +2,6 @@ from collections.abc import Mapping
 from logging import Formatter, LogRecord
 import json
 
-
 #: Attributes of a LogRecord.
 # See <the docs `https://docs.python.org/3/library/logging.html#logrecord-attributes`>_.
 RECORD_ATTRIBUTES = (
