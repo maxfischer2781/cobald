@@ -16,13 +16,14 @@ M = TypeVar("M", str, int, float, bool, dict, list)
 
 
 class ConfigurationError(Exception):
-    def __init__(self, what: Any, where: str = None):
+    def __init__(self, what: Any, where: "str | None" = None):
         super().__init__(what, where)
-        self.where = where
         self.what = what
+        self.where = where
 
     def __str__(self) -> str:
-        return f"invalid configuration element {self.where!r}: {self.what}"
+        where = f" {self.where!r}" if self.where is not None else ''
+        return f"invalid configuration element{where}: {self.what}"
 
 
 def configure_logging(logging_mapping: dict):
