@@ -22,7 +22,7 @@ class ConfigurationError(Exception):
         self.where = where
 
     def __str__(self) -> str:
-        where = f" {self.where!r}" if self.where is not None else ''
+        where = f" {self.where!r}" if self.where is not None else ""
         return f"invalid configuration element{where}: {self.what}"
 
 
