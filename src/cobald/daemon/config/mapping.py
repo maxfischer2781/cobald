@@ -17,9 +17,12 @@ M = TypeVar("M", str, int, float, bool, dict, list)
 
 class ConfigurationError(Exception):
     def __init__(self, what: Any, where: str = None):
+        super().__init__(what, where)
         self.where = where
         self.what = what
-        super().__init__("invalid configuration element '%s': %s" % (where, what))
+
+    def __str__(self) -> str:
+        return f"invalid configuration element {self.where!r}: {self.what}"
 
 
 def configure_logging(logging_mapping: dict):
