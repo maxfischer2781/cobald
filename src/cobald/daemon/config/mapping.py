@@ -26,7 +26,7 @@ class ConfigurationError(Exception):
         return f"invalid configuration element{where}: {self.what}"
 
 
-def configure_logging(logging_mapping: dict):
+def configure_logging(logging_mapping: "dict[str, Any]"):
     _logger.info("Configuring logging")
     # > takes a default parameter, disable_existing_loggers, which defaults to True
     # > for reasons of backward compatibility. This may or may not be what you want
