@@ -8,7 +8,7 @@ from collections import Counter
 from cobald.daemon.config.mapping import Translator, ConfigurationError
 
 
-def fqdn(obj: Any)-> Any:
+def fqdn(obj: Any) -> Any:
     """Assign an fully qualified name to an object"""
     obj.fqdn = obj.__module__ + "." + obj.__qualname__
     return obj
@@ -32,7 +32,7 @@ def count(key: str):
     return _counts[key]
 
 
-_counts: Counter[str] = Counter()
+_counts: "Counter[str]" = Counter()
 
 
 def counted(key: str) -> "dict[str, Any]":
