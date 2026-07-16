@@ -129,12 +129,14 @@ class TestTranslate(object):
                 {"__type__": raises.fqdn}, where="test_translate_error"
             )
         assert err.value.where == "test_translate_error"
+        assert "test_translate_error" in str(err.value)
         # make sure errors propagate up without being raised anew
         with pytest.raises(ConfigurationError) as err:
             translator.translate_hierarchy(
                 [1, {"foo": {"__type__": raises.fqdn}}], where="test_translate_error"
             )
         assert err.value.where == "test_translate_error[1].foo"
+        assert "test_translate_error[1].foo" in str(err.value)
 
     def test_lookup_failure(self):
         translator = Translator()
