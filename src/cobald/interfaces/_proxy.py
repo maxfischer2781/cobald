@@ -3,7 +3,6 @@ from typing import TypeVar, Type
 
 from ._partial import Partial
 
-
 C = TypeVar("C", bound="PoolDecorator")
 
 

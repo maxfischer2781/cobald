@@ -4,7 +4,6 @@ import abc
 from ._pool import Pool
 from ._partial import Partial
 
-
 C = TypeVar("C", bound="Controller")
 
 
