@@ -35,18 +35,20 @@ class RangeSelector(object):
         self._lookup = self._compile_lookup(base, rules)
 
     def get_rule(self, supply: float):
+        """Fetch the rule that applies for a given `supply`"""
         for (low, high), rule in self._lookup.items():
             if low <= supply < high:
                 return rule
+        raise RuntimeError(f"_lookup was compiled with an upper bound: {self._lookup}")
 
     @staticmethod
     def _compile_lookup(base: ControlRule, rules: tuple[tuple[float, ControlRule], ...]) -> dict[tuple[float, float], ControlRule]:
         lookup = {}
         thresholds, _rules = zip(*sorted(rules))
         for low, high, rule in zip(
-            chain([0], thresholds),
-            chain(thresholds, [float("inf")]),
-            chain([base], _rules),
+            (0.0, *thresholds),
+            (*thresholds, float("inf")),
+            (base, *_rules),
         ):
             if low == high:
                 raise ValueError("Duplicate entries for threshold %s" % low)
