@@ -3,7 +3,7 @@ from cobald.interfaces import Pool, PoolDecorator
 from ..utility.primitives import infinity as inf
 
 
-def _clamp(low, value, high):
+def _clamp(low: float, value: float, high: float):
     """Clamp `value` to the range between `low` and `high`"""
     if value < low:
         return low
@@ -13,7 +13,7 @@ def _clamp(low, value, high):
         return value
 
 
-def _floor(n, base=1):
+def _floor(n: float, base: float = 1):
     """Floor `n` to a multiple of `base`"""
     return n // base * base
 
@@ -54,7 +54,7 @@ class Standardiser(PoolDecorator):
         else:
             self.target.demand = self._demand
 
-    def _clamp_demand(self, value):
+    def _clamp_demand(self, value: float):
         """Clamp `value` between the min/max demand limits"""
         supply = self.target.supply
         by_supply = _clamp(supply - self.backlog, value, supply + self.surplus)
