@@ -1,7 +1,5 @@
 from cobald.interfaces import Pool, PoolDecorator
 
-from ..utility.primitives import infinity as inf
-
 
 def _clamp(low: float, value: float, high: float):
     """Clamp `value` to the range between `low` and `high`"""
@@ -64,11 +62,11 @@ class Standardiser(PoolDecorator):
     def __init__(
         self,
         target: Pool,
-        minimum: float = -inf,
-        maximum: float = inf,
+        minimum: float = -float("inf"),
+        maximum: float = float("inf"),
         granularity: int = 1,
-        backlog: float = inf,
-        surplus: float = inf,
+        backlog: float = float("inf"),
+        surplus: float = float("inf"),
     ):
         super().__init__(target)
         assert minimum <= maximum, "minimum must be smaller than maximum"
