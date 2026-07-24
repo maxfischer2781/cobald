@@ -1,6 +1,5 @@
 from functools import partial
-from itertools import chain
-from typing import Callable, Tuple, Optional, TypeVar, List, Set, Dict, overload
+from typing import Any, Callable, Optional, TypeVar, TypeAlias, overload
 
 import asyncio
 
@@ -21,7 +20,7 @@ C = TypeVar("C", bound="Controller")
 #: .. py:function:: \ rule(pool: Pool, interval: float) -> Optional[float]
 #:
 #: Note that a rule should *not* modify the ``pool`` directly.
-ControlRule = Callable[[Pool, float], Optional[float]]
+ControlRule: TypeAlias = Callable[[Pool, float], Optional[float]]
 
 
 class RangeSelector(object):
@@ -32,7 +31,7 @@ class RangeSelector(object):
     :param rules: lower bound and its control rule
     """
 
-    def __init__(self, base: ControlRule, *rules: Tuple[float, ControlRule]):
+    def __init__(self, base: ControlRule, *rules: tuple[float, ControlRule]):
         self._lookup = self._compile_lookup(base, rules)
 
     def get_rule(self, supply: float):
@@ -41,9 +40,7 @@ class RangeSelector(object):
                 return rule
 
     @staticmethod
-    def _compile_lookup(base, rules) -> Dict[Tuple[float, float], ControlRule]:
-        if not rules:
-            return {(0, float("inf")): base}
+    def _compile_lookup(base: ControlRule, rules: tuple[tuple[float, ControlRule], ...]) -> dict[tuple[float, float], ControlRule]:
         lookup = {}
         thresholds, _rules = zip(*sorted(rules))
         for low, high, rule in zip(
@@ -54,7 +51,7 @@ class RangeSelector(object):
             if low == high:
                 raise ValueError("Duplicate entries for threshold %s" % low)
             lookup[low, high] = rule
-        return lookup
+        return lookup  # type: ignore
 
 
 @service(flavour=asyncio)
@@ -70,7 +67,7 @@ class Stepwise(Controller):
         self,
         target: Pool,
         base: ControlRule,
-        *rules: Tuple[float, ControlRule],
+        *rules: tuple[float, ControlRule],
         interval: float = 1,
     ):
         super().__init__(target)
@@ -130,8 +127,8 @@ class UnboundStepwise(object):
 
     def __init__(self, base: ControlRule):
         self.base = base
-        self.rules: List[Tuple[float, ControlRule]] = []
-        self._thresholds: Set[float] = set()
+        self.rules: list[tuple[float, ControlRule]] = []
+        self._thresholds: set[float] = set()
 
     @overload  # noqa: F811
     def add(self, rule: ControlRule, *, supply: float) -> ControlRule: ...
@@ -141,7 +138,7 @@ class UnboundStepwise(object):
         self, rule: None, *, supply: float
     ) -> Callable[[ControlRule], ControlRule]: ...
 
-    def add(self, rule: ControlRule = None, *, supply: float):  # noqa: F811
+    def add(self, rule: ControlRule | None = None, *, supply: float) -> ControlRule | Callable[[ControlRule], ControlRule]:  # noqa: F811
         """
         Register a new rule above a given ``supply`` threshold
 
@@ -175,7 +172,7 @@ class UnboundStepwise(object):
         else:
             return partial(self.add, supply=supply)
 
-    def s(self, *args, **kwargs) -> Partial[Stepwise]:
+    def s(self, *args: Any, **kwargs: Any) -> Partial[Stepwise]:
         """
         Create an unbound prototype of this class, partially applying arguments
 
@@ -192,7 +189,7 @@ class UnboundStepwise(object):
         """
         return Partial(Stepwise, self.base, *self.rules, *args, __leaf__=True, **kwargs)
 
-    def __call__(self, target: Pool, interval: float = None):
+    def __call__(self, target: Pool, interval: float | None = None):
         if interval is None:
             return Stepwise(target, self.base, *self.rules)
         return Stepwise(target, self.base, *self.rules, interval=interval)
