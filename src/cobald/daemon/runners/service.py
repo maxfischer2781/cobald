@@ -1,4 +1,4 @@
-from typing import TypeVar, Set
+from typing import Any, Callable, TypeVar, Protocol
 import logging
 import weakref
 import trio
@@ -14,17 +14,24 @@ from ..debug import NameRepr
 T = TypeVar("T")
 
 
-def _weakset_copy(ws: "weakref.WeakSet[T]") -> Set[T]:
+def _weakset_copy(ws: "weakref.WeakSet[T]") -> set[T]:
     """Thread-safely copy all items from a weakset to a set"""
     # The various WeakSet methods are not thread-safe because they miss locking.
     # The main issue is that all copy approaches use ``__iter__``, which is not
     # thread-safe against items being garbage collected. However, we can access
     # the actual backing real set ``ws.data`` and ``set(some_set)`` is GIL-atomic.
-    refs = set(ws.data)
+    refs: "set[weakref.ReferenceType[T]]" = set(ws.data)
     return {item for item in (ref() for ref in refs) if item is not None}
 
 
-class ServiceUnit(object):
+class Service(Protocol):
+    """
+    Protocol for classes that provide a service to run in the background
+    """
+    def run(self) -> None: ...
+
+
+class ServiceUnit:
     """
     Definition for running a service
 
@@ -32,9 +39,9 @@ class ServiceUnit(object):
     :param flavour: runner flavour to use for running the service
     """
 
-    __active_units__: "weakref.WeakSet[ServiceUnit]" = weakref.WeakSet()
+    __defined_units__: "weakref.WeakSet[ServiceUnit]" = weakref.WeakSet()
 
-    def __init__(self, service, flavour):
+    def __init__(self, service: Service, flavour: ModuleType):
         assert hasattr(service, "run"), "service must implement a 'run' method"
         assert any(
             flavour == runner.flavour for runner in MetaRunner.runner_types
@@ -44,15 +51,16 @@ class ServiceUnit(object):
         self.service = weakref.ref(service)
         self.flavour = flavour
         self._started = False
-        ServiceUnit.__active_units__.add(self)
+        ServiceUnit.__defined_units__.add(self)
 
     @classmethod
-    def units(cls) -> "Set[ServiceUnit]":
+    def units(cls) -> "set[ServiceUnit]":
         """Container of all currently defined units"""
-        return _weakset_copy(cls.__active_units__)
+        return _weakset_copy(cls.__defined_units__)
 
     @property
     def running(self):
+        """Whether this specific service is running"""
         return self._started
 
     def start(self, runner: MetaRunner):
@@ -71,24 +79,22 @@ class ServiceUnit(object):
         )
 
 
-def service(flavour):
+def service(flavour: ModuleType) -> Callable[[Service], Service]:
     r"""
     Mark a class as implementing a Service
 
     Each Service class must have a ``run`` method, which does not take any arguments.
-    This method is :py:meth:`~.ServiceRunner.adopt`\ ed after the daemon starts, unless
-
-    * the Service has been garbage collected, or
-    * the ServiceUnit has been :py:meth:`~.ServiceUnit.cancel`\ ed.
+    This method is :py:meth:`~.ServiceRunner.adopt`\ ed after the daemon starts,
+    unless the Service has been garbage collected
 
     For each service instance, its :py:class:`~.ServiceUnit` is available at
     ``service_instance.__service_unit__``.
     """
 
-    def service_unit_decorator(raw_cls):
+    def service_unit_decorator(raw_cls: Service) -> Service:
         __new__ = raw_cls.__new__
 
-        def __new_service__(cls, *args, **kwargs):
+        def __new_service__(cls: type[Service], *args: Any, **kwargs: Any):
             if __new__ is object.__new__:
                 self = __new__(cls)
             else:
