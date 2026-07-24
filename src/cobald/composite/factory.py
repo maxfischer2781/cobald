@@ -42,7 +42,7 @@ class FactoryPool(CompositePool):
         return [*self._hatchery, *self._mortuary]
 
     @children.setter
-    def children(self, value: List[Pool]) -> None:
+    def children(self, value: list[Pool]) -> None:
         raise NotImplementedError(f"{self.__class__.__name__}.children cannot be set")
 
     @property

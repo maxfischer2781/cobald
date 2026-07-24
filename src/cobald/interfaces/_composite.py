@@ -1,4 +1,3 @@
-from typing import List
 import abc
 
 from ._pool import Pool
@@ -40,11 +39,11 @@ class CompositePool(Pool):
 
     @property
     @abc.abstractmethod
-    def children(self) -> List[Pool]:
+    def children(self) -> list[Pool]:
         """The individual resource providers making up this pool"""
         raise NotImplementedError
 
     @children.setter
     @abc.abstractmethod
-    def children(self, value: List[Pool]) -> None:
+    def children(self, value: list[Pool]) -> None:
         raise NotImplementedError
