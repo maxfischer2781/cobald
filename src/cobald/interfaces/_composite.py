@@ -11,19 +11,19 @@ class CompositePool(Pool):
 
     @property
     @abc.abstractmethod
-    def supply(self):
+    def supply(self) -> float:
         """The volume of resources that is provided by this pool"""
         raise NotImplementedError
 
     @property
     @abc.abstractmethod
-    def demand(self):
+    def demand(self) -> float:
         """The volume of resources to be provided by this pool"""
         raise NotImplementedError
 
     @demand.setter
     @abc.abstractmethod
-    def demand(self, value):
+    def demand(self, value: float) -> None:
         raise NotImplementedError
 
     @property
@@ -46,5 +46,5 @@ class CompositePool(Pool):
 
     @children.setter
     @abc.abstractmethod
-    def children(self, value: List[Pool]):
+    def children(self, value: List[Pool]) -> None:
         raise NotImplementedError
