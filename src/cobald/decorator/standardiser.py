@@ -1,6 +1,5 @@
 from cobald.interfaces import Pool, PoolDecorator
 
-from ..utility import enforce
 from ..utility.primitives import infinity as inf
 
 
@@ -72,10 +71,10 @@ class Standardiser(PoolDecorator):
         surplus: float = inf,
     ):
         super().__init__(target)
-        enforce(minimum <= maximum, ValueError("minimum must be smaller than maximum"))
-        enforce(surplus > 0, ValueError("allowed surplus must be positive"))
-        enforce(backlog > 0, ValueError("allowed backlog must be positive"))
-        enforce(granularity > 0, ValueError("granularity must be positive"))
+        assert minimum <= maximum, "minimum must be smaller than maximum"
+        assert surplus > 0, "allowed surplus must be positive"
+        assert backlog > 0, "allowed backlog must be positive"
+        assert granularity > 0, "granularity must be positive"
         # demand may be incrementally changed - store it internally to give
         # the impression of a smooth transition
         self._demand = target.demand
