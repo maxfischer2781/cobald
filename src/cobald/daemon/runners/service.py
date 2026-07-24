@@ -32,6 +32,9 @@ class Service(Protocol):
     def run(self) -> None: ...
 
 
+S = TypeVar("S", bound=Service)
+
+
 class ServiceUnit:
     """
     Definition for running a service
@@ -80,7 +83,7 @@ class ServiceUnit:
         )
 
 
-def service(flavour: ModuleType) -> Callable[[Service], Service]:
+def service(flavour: ModuleType) -> Callable[[type[S]], type[S]]:
     r"""
     Mark a class as implementing a Service
 
@@ -92,10 +95,10 @@ def service(flavour: ModuleType) -> Callable[[Service], Service]:
     ``service_instance.__service_unit__``.
     """
 
-    def service_unit_decorator(raw_cls: Service) -> Service:
+    def service_unit_decorator(raw_cls: type[S]) -> type[S]:
         __new__ = raw_cls.__new__
 
-        def __new_service__(cls: type[Service], *args: Any, **kwargs: Any):
+        def __new_service__(cls: type[S], *args: Any, **kwargs: Any) -> S:
             if __new__ is object.__new__:
                 self = __new__(cls)
             else:
