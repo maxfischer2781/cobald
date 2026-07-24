@@ -2,7 +2,7 @@ from functools import partial
 from itertools import chain
 from typing import Callable, Tuple, Optional, TypeVar, List, Set, Dict, overload
 
-import trio
+import asyncio
 
 from ..interfaces import Pool, Controller, Partial
 from ..daemon import service
@@ -57,7 +57,7 @@ class RangeSelector(object):
         return lookup
 
 
-@service(flavour=trio)
+@service(flavour=asyncio)
 class Stepwise(Controller):
     """
     Controller that selects from several strategies based on supply
@@ -84,7 +84,7 @@ class Stepwise(Controller):
             demand = current_rule(target, interval)
             if demand is not None:
                 self.target.demand = demand
-            await trio.sleep(interval)
+            await asyncio.sleep(interval)
 
 
 class UnboundStepwise(object):

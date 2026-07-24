@@ -1,13 +1,13 @@
 from typing import Callable
 import weakref
 
-import trio
+import asyncio
 
 from cobald.interfaces import Pool, CompositePool
 from cobald.daemon import service
 
 
-@service(flavour=trio)
+@service(flavour=asyncio)
 class FactoryPool(CompositePool):
     """
     Composition that adds and removes pools to satisfy demand
@@ -88,7 +88,7 @@ class FactoryPool(CompositePool):
 
     async def run(self):
         while True:
-            await trio.sleep(self.interval)
+            await asyncio.sleep(self.interval)
             # freeze target demand in case another thread updates us
             supply, demand = self.supply, self.demand
             if supply > demand:

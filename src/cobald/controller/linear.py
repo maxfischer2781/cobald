@@ -1,11 +1,11 @@
-import trio
+import asyncio
 
 from cobald.interfaces import Pool, Controller
 
 from cobald.daemon import service
 
 
-@service(flavour=trio)
+@service(flavour=asyncio)
 class LinearController(Controller):
     """
     Controller that linearly increases or decreases demand
@@ -31,7 +31,7 @@ class LinearController(Controller):
     async def run(self):
         while True:
             self.regulate(self.interval)
-            await trio.sleep(self.interval)
+            await asyncio.sleep(self.interval)
 
     def regulate(self, interval):
         if self.target.utilisation < self.low_utilisation:

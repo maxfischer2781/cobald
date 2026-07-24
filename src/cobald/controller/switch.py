@@ -1,13 +1,13 @@
 from typing import Union
 
-import trio
+import asyncio
 
 from ..interfaces import Pool, Controller
 from ..utility import enforce, InvariantError, pairwise
 from ..daemon import service
 
 
-@service(flavour=trio)
+@service(flavour=asyncio)
 class DemandSwitch(Controller):
     """
     Controller that dispatches to slaved controllers based on demand
