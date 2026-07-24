@@ -1,4 +1,4 @@
-from typing import Any, Callable, TypeVar, Protocol
+from typing import Any, Coroutine, Callable, TypeVar, Protocol
 import asyncio
 import logging
 import weakref
@@ -29,7 +29,7 @@ class Service(Protocol):
     Protocol for classes that provide a service to run in the background
     """
 
-    def run(self) -> None: ...
+    def run(self) -> None | Coroutine[Any, Any, None]: ...
 
 
 S = TypeVar("S", bound=Service)
