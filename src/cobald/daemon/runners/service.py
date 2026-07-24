@@ -28,6 +28,7 @@ class Service(Protocol):
     """
     Protocol for classes that provide a service to run in the background
     """
+
     def run(self) -> None: ...
 
 
@@ -135,7 +136,9 @@ class ServiceRunner:
         self.running = threading.Event()
         self.accept_delay = accept_delay
 
-    def execute(self, payload: Callable[..., T], *args: Any, flavour: ModuleType, **kwargs: Any) -> T:
+    def execute(
+        self, payload: Callable[..., T], *args: Any, flavour: ModuleType, **kwargs: Any
+    ) -> T:
         """
         Synchronously run ``payload`` and provide its output
 
@@ -146,7 +149,9 @@ class ServiceRunner:
             payload = functools.partial(payload, *args, **kwargs)
         return self._meta_runner.run_payload(payload, flavour=flavour)
 
-    def adopt(self, payload: Callable[..., T], *args: Any, flavour: ModuleType, **kwargs: Any) -> None:
+    def adopt(
+        self, payload: Callable[..., T], *args: Any, flavour: ModuleType, **kwargs: Any
+    ) -> None:
         """
         Concurrently run ``payload`` in the background
 

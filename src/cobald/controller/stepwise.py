@@ -42,7 +42,9 @@ class RangeSelector(object):
         raise RuntimeError(f"_lookup was compiled with an upper bound: {self._lookup}")
 
     @staticmethod
-    def _compile_lookup(base: ControlRule, rules: tuple[tuple[float, ControlRule], ...]) -> dict[tuple[float, float], ControlRule]:
+    def _compile_lookup(
+        base: ControlRule, rules: tuple[tuple[float, ControlRule], ...]
+    ) -> dict[tuple[float, float], ControlRule]:
         if not rules:
             return {(0, float("inf")): base}
         lookup = {}
@@ -142,7 +144,9 @@ class UnboundStepwise(object):
         self, rule: None, *, supply: float
     ) -> Callable[[ControlRule], ControlRule]: ...
 
-    def add(self, rule: ControlRule | None = None, *, supply: float) -> ControlRule | Callable[[ControlRule], ControlRule]:  # noqa: F811
+    def add(
+        self, rule: ControlRule | None = None, *, supply: float
+    ) -> ControlRule | Callable[[ControlRule], ControlRule]:  # noqa: F811
         """
         Register a new rule above a given ``supply`` threshold
 
