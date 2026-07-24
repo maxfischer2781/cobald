@@ -111,7 +111,7 @@ def service(flavour: ModuleType) -> Callable[[Service], Service]:
     return service_unit_decorator
 
 
-class ServiceRunner(object):
+class ServiceRunner:
     """
     Runner for coroutines, subroutines and services
 
@@ -135,7 +135,7 @@ class ServiceRunner(object):
         self.running = threading.Event()
         self.accept_delay = accept_delay
 
-    def execute(self, payload, *args, flavour: ModuleType, **kwargs):
+    def execute(self, payload: Callable[..., T], *args: Any, flavour: ModuleType, **kwargs: Any) -> T:
         """
         Synchronously run ``payload`` and provide its output
 
@@ -146,7 +146,7 @@ class ServiceRunner(object):
             payload = functools.partial(payload, *args, **kwargs)
         return self._meta_runner.run_payload(payload, flavour=flavour)
 
-    def adopt(self, payload, *args, flavour: ModuleType, **kwargs):
+    def adopt(self, payload: Callable[..., T], *args: Any, flavour: ModuleType, **kwargs: Any) -> None:
         """
         Concurrently run ``payload`` in the background
 
@@ -158,7 +158,7 @@ class ServiceRunner(object):
         self._meta_runner.register_payload(payload, flavour=flavour)
 
     @exclusive()
-    def accept(self):
+    def accept(self) -> None:
         """
         Start accepting synchronous, asynchronous and service payloads
 
@@ -170,13 +170,13 @@ class ServiceRunner(object):
         self.adopt(self._accept_services, flavour=trio)
         self._meta_runner.run()
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """Shutdown the accept loop and stop running payloads"""
         self._must_shutdown = True
         self._is_shutdown.wait()
         self._meta_runner.stop()
 
-    async def _accept_services(self):
+    async def _accept_services(self) -> None:
         delay, max_delay, increase = 0.0, self.accept_delay, self.accept_delay / 10
         self._is_shutdown.clear()
         self.running.set()
