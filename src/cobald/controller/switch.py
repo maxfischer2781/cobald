@@ -56,7 +56,7 @@ class DemandSwitch(Controller):
     async def run(self):
         while True:
             self.regulate_demand(self.interval)
-            await trio.sleep(self.interval)
+            await asyncio.sleep(self.interval)
 
     def regulate(self, interval):
         chosen = self._default
