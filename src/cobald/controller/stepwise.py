@@ -43,6 +43,8 @@ class RangeSelector(object):
 
     @staticmethod
     def _compile_lookup(base: ControlRule, rules: tuple[tuple[float, ControlRule], ...]) -> dict[tuple[float, float], ControlRule]:
+        if not rules:
+            return {(0, float("inf")): base}
         lookup = {}
         thresholds, _rules = zip(*sorted(rules))
         for low, high, rule in zip(
