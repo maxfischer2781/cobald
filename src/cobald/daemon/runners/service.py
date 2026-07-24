@@ -1,7 +1,7 @@
 from typing import Any, Callable, TypeVar, Protocol
+import asyncio
 import logging
 import weakref
-import trio
 import functools
 import threading
 
@@ -167,7 +167,7 @@ class ServiceRunner:
         """
         self._must_shutdown = False
         self._logger.info("%s starting", self.__class__.__name__)
-        self.adopt(self._accept_services, flavour=trio)
+        self.adopt(self._accept_services, flavour=asyncio)
         self._meta_runner.run()
 
     def shutdown(self) -> None:
@@ -184,9 +184,9 @@ class ServiceRunner:
             self._logger.info("%s started", self.__class__.__name__)
             while not self._must_shutdown:
                 self._adopt_services()
-                await trio.sleep(delay)
+                await asyncio.sleep(delay)
                 delay = min(delay + increase, max_delay)
-        except trio.Cancelled:
+        except asyncio.CancelledError:
             self._logger.info("%s cancelled", self.__class__.__name__)
         except BaseException:
             self._logger.exception("%s aborted", self.__class__.__name__)
