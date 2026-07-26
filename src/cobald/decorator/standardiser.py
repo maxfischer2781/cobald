@@ -76,7 +76,7 @@ class Standardiser(PoolDecorator):
         assert (
             granularity is None or granularity > 0
         ), "granularity must be positive or None"
-        # demand may be incrementally changed by the parent and independently changes by the child
+        # demand may incrementally change by parent and independently by child
         # track both ends to reflect full granularity and changes
         self._parent_demand = target.demand
         self._target_demand = target.demand
