@@ -38,19 +38,20 @@ class Standardiser(PoolDecorator):
 
     @property
     def demand(self) -> float:
-        if abs(self._demand - self.target.demand) >= self.granularity:
-            self._demand = self.target.demand
-        return self._demand
+        if self._target_demand != self.target.demand:
+            return self.target.demand
+        return self._parent_demand
 
     @demand.setter
     def demand(self, value: float) -> None:
         # Record the clamped demand so that the controller sees the limits
         # but does not get into numerical problems from limited granularity
-        self._demand = self._clamp_demand(value)
-        if self.granularity != 1:
-            self.target.demand = self._clamp_demand(_floor(value, self.granularity))
+        self._parent_demand = self._clamp_demand(value)
+        if self.granularity is not None:
+            self._target_demand = self._clamp_demand(_floor(value, self.granularity))
         else:
-            self.target.demand = self._demand
+            self._target_demand = self._parent_demand
+        self.target.demand = self._target_demand
 
     def _clamp_demand(self, value: float) -> float:
         """Clamp demand `value` between the min/max demand limits"""
@@ -64,7 +65,7 @@ class Standardiser(PoolDecorator):
         target: Pool,
         minimum: float = -float("inf"),
         maximum: float = float("inf"),
-        granularity: int = 1,
+        granularity: float | None = 1,
         backlog: float = float("inf"),
         surplus: float = float("inf"),
     ) -> None:
@@ -72,10 +73,11 @@ class Standardiser(PoolDecorator):
         assert minimum <= maximum, "minimum must be smaller than maximum"
         assert surplus > 0, "allowed surplus must be positive"
         assert backlog > 0, "allowed backlog must be positive"
-        assert granularity > 0, "granularity must be positive"
-        # demand may be incrementally changed - store it internally to give
-        # the impression of a smooth transition
-        self._demand = target.demand
+        assert granularity is None or granularity > 0, "granularity must be positive or None"
+        # demand may be incrementally changed by the parent and independently changes by the child
+        # track both ends to reflect full granularity and changes
+        self._parent_demand = target.demand
+        self._target_demand = target.demand
         self.minimum = minimum
         self.maximum = maximum
         self.granularity = granularity
