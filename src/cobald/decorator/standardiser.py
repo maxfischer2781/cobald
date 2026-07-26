@@ -43,7 +43,7 @@ class Standardiser(PoolDecorator):
         return self._demand
 
     @demand.setter
-    def demand(self, value: float):
+    def demand(self, value: float) -> None:
         # Record the clamped demand so that the controller sees the limits
         # but does not get into numerical problems from limited granularity
         self._demand = self._clamp_demand(value)
@@ -52,8 +52,8 @@ class Standardiser(PoolDecorator):
         else:
             self.target.demand = self._demand
 
-    def _clamp_demand(self, value: float):
-        """Clamp `value` between the min/max demand limits"""
+    def _clamp_demand(self, value: float) -> float:
+        """Clamp demand `value` between the min/max demand limits"""
         supply = self.target.supply
         by_supply = _clamp(supply - self.backlog, value, supply + self.surplus)
         by_limits = _clamp(self.minimum, by_supply, self.maximum)
@@ -67,7 +67,7 @@ class Standardiser(PoolDecorator):
         granularity: int = 1,
         backlog: float = float("inf"),
         surplus: float = float("inf"),
-    ):
+    ) -> None:
         super().__init__(target)
         assert minimum <= maximum, "minimum must be smaller than maximum"
         assert surplus > 0, "allowed surplus must be positive"
