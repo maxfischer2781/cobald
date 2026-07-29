@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     Owner = Controller | PoolDecorator
     C_co = TypeVar("C_co", bound=Owner)
 else:
-    Owner = Union[object]
+    Owner = object
     C_co = TypeVar("C_co")
 
 
@@ -46,12 +46,12 @@ class Partial(Generic[C_co]):
         self.ctor = ctor
         self.args = args
         self.kwargs = kwargs
-        # whether this constructs a leaf, i.e. a component that does not take a target/child
+        # whether this constructs a leaf, i.e. a component not taking a target/child
         self.leaf = __leaf__
         self._check_signature()
 
-    def _check_signature(self):
-        """Check whether the provided arguments are compatible with the `ctor` signature"""
+    def _check_signature(self) -> None:
+        """Check that the provided arguments are compatible with the `ctor` signature"""
         args, kwargs = self.args, self.kwargs
         if "target" in kwargs or (args and isinstance(args[0], _pool.Pool)):
             raise TypeError(
@@ -74,21 +74,21 @@ class Partial(Generic[C_co]):
         )
 
     def __construct__(self, *args: Any, **kwargs: Any) -> C_co:
-        """Construct an instance using `ctor` as well as stored and provided arguments"""
+        """Construct an instance stored and provided arguments"""
         return self.ctor(*args, *self.args, **kwargs, **self.kwargs)
 
     # TODO: Partial[Pool] fits this case, but it's not allowed by C_co ATM...
-    @overload  # noqa: F811
+    @overload
     def __rshift__(self, other: "Pool | Owner") -> C_co: ...
 
-    @overload  # noqa: F811
+    @overload
     def __rshift__(
         self, other: "Partial[Any] | PartialBind[Any]"
     ) -> "PartialBind[C_co]": ...
 
     def __rshift__(
         self, other: "Pool | Owner | Partial[Any] | PartialBind[Any]"
-    ) -> "PartialBind[C_co] | C_co":  # noqa: F811
+    ) -> "PartialBind[C_co] | C_co":
         if isinstance(other, PartialBind):
             return PartialBind(self, other.parent, *other.targets)
         elif isinstance(other, Partial):
