@@ -26,7 +26,7 @@ class Pool(metaclass=abc.ABCMeta):
 
     @demand.setter
     @abc.abstractmethod
-    def demand(self, value: float):
+    def demand(self, value: float) -> None:
         raise NotImplementedError
 
     @property
@@ -42,7 +42,7 @@ class Pool(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @classmethod
-    def s(cls: Type[C], *args, **kwargs) -> Partial[C]:
+    def s(cls: Type[C], *args: Any, **kwargs: Any) -> Partial[C]:
         """
         Create an unbound prototype of this class, partially applying arguments
 
