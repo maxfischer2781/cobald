@@ -1,3 +1,4 @@
+from typing import Any
 from collections.abc import Mapping
 from logging import Formatter, LogRecord
 from typing import Dict, Set, Union, Any, TypeVar
@@ -19,7 +20,7 @@ def escape_field(field: T) -> T:
 
 
 def line_protocol(
-    name, tags: dict = None, fields: dict = None, timestamp: float = None
+    name: str, tags: dict[str, Any], fields: dict[str, Any], timestamp: float | None = None
 ) -> str:
     """
     Format a report as per InfluxDB line protocol
@@ -70,11 +71,11 @@ class LineProtocolFormatter(Formatter):
     def __init__(
         self,
         tags: Union[Dict[str, Any], Set[str], None] = None,
-        resolution: float = None,
+        resolution: float | None = None,
     ):
         super().__init__()
         self._default_tags = tags if isinstance(tags, Mapping) else {}
-        self._tags_whitelist = set(tags) if tags is not None else set()
+        self._tags_whitelist = frozenset(tags) if tags is not None else frozenset[str]()
         self._fields_blacklist = self._tags_whitelist | set(RECORD_ATTRIBUTES)
         self._resolution = resolution
 
