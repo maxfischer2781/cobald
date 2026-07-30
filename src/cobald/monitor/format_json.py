@@ -45,10 +45,10 @@ class JsonFormatter(Formatter):
     false excludes the timestamp from reports.
     """
 
-    def __init__(self, fmt: dict[str, Any] | None = None, datefmt: str | bool | None = None):
+    def __init__(self, fmt: dict[str, Any] | None = None, datefmt: str | None = None):
         super().__init__(fmt=None, datefmt=datefmt, style="%")
         self._defaults = fmt or {}
-        self._add_time = self.datefmt or self.datefmt is None
+        self._add_time = self.datefmt is None or bool(self.datefmt)
 
     def format(self, record: LogRecord):
         args = record.args
