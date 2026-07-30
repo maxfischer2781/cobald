@@ -5,10 +5,9 @@ from . import _pool
 
 if TYPE_CHECKING:
     from ._controller import Controller
-    from ._proxy import PoolDecorator
     from ._pool import Pool
 
-    Owner = Controller | PoolDecorator
+    Owner = Controller | Pool
     C_co = TypeVar("C_co", bound=Owner)
 else:
     Owner = object

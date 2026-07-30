@@ -1,13 +1,10 @@
-from typing import TypeVar, Type, TYPE_CHECKING
+from typing import Any, TypeVar, Type
 import abc
 
 from ._partial import Partial
 
-if TYPE_CHECKING:
-    from ._controller import Controller
 
-
-C = TypeVar("C", bound="Controller")
+C = TypeVar("C", bound="Pool")
 
 
 class Pool(metaclass=abc.ABCMeta):
