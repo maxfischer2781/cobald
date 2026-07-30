@@ -3,7 +3,6 @@ import abc
 
 from ._partial import Partial
 
-
 C = TypeVar("C", bound="Pool")
 
 

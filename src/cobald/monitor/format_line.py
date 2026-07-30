@@ -1,7 +1,6 @@
-from typing import Any
+from typing import Any, TypeVar
 from collections.abc import Mapping
 from logging import Formatter, LogRecord
-from typing import Dict, Set, Union, Any, TypeVar
 
 from .format_json import RECORD_ATTRIBUTES
 
@@ -20,7 +19,10 @@ def escape_field(field: T) -> T:
 
 
 def line_protocol(
-    name: str, tags: dict[str, Any], fields: dict[str, Any], timestamp: float | None = None
+    name: str,
+    tags: dict[str, Any],
+    fields: dict[str, Any],
+    timestamp: float | None = None,
 ) -> str:
     """
     Format a report as per InfluxDB line protocol
@@ -70,7 +72,7 @@ class LineProtocolFormatter(Formatter):
 
     def __init__(
         self,
-        tags: Union[Dict[str, Any], Set[str], None] = None,
+        tags: dict[str, Any] | set[str] | None = None,
         resolution: float | None = None,
     ):
         super().__init__()
