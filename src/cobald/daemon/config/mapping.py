@@ -52,7 +52,7 @@ class Translator(object):
         try:
             if isinstance(structure, dict):
                 structure = {
-                    key: self.translate_hierarchy(value, where="%s.%s" % (where, key))
+                    key: self.translate_hierarchy(value, where=f"{where}.{key}")
                     for key, value in structure.items()
                 }
                 if "__type__" in structure:
@@ -65,7 +65,7 @@ class Translator(object):
                     reversed(
                         [
                             self.translate_hierarchy(
-                                item, where="%s[%s]" % (where, index)
+                                item, where=f"{where}[{index}]"
                             )
                             for index, item in reversed(list(enumerate(structure)))
                         ]
@@ -202,7 +202,7 @@ def load_configuration(
     unmatched = config_data.keys() - {plugin.section for plugin in plugins}
     if unmatched:
         raise ConfigurationError(
-            where="root", what="unknown config sections %s" % ", ".join(unmatched)
+            where="root", what=f"unknown config sections {", ".join(unmatched)}"
         )
     content = {}
     for plugin in plugins:
@@ -211,7 +211,7 @@ def load_configuration(
         except KeyError:
             if plugin.required:
                 raise ConfigurationError(
-                    where="root", what="missing section %r" % plugin.section
+                    where="root", what="missing section {plugin.section!r}"
                 ) from None
         else:
             # invoke the plugin and store possible output
