@@ -174,12 +174,11 @@ def load_configuration(
     else:
         configure_logging(logging_mapping)
     # see if there is any unexpected config content
-    unmatched = config_data.keys() - {plugin.section for plugin in plugins}
-    if unmatched:
+    if unmatched := config_data.keys() - {plugin.section for plugin in plugins}:
         raise ConfigurationError(
             where="root", what=f"unknown config sections {", ".join(unmatched)}"
         )
-    content = {}
+    content: dict[SectionPlugin, Any] = {}
     for plugin in plugins:
         try:
             section_data = config_data[plugin.section]
