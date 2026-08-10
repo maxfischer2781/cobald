@@ -55,10 +55,10 @@ def load_section_plugins(entry_point_group: str) -> tuple[SectionPlugin]:
         for plugin in map(SectionPlugin.load, get_entrypoints(entry_point_group))
     }
     dependencies: dict[str, set[str]] = {
-        plugin.section: set(plugin.after) for plugin in plugins.values()
+        plugin.section: set(plugin.requirements.after) for plugin in plugins.values()
     }
     for plugin in plugins.values():
-        for before in plugin.before:
+        for before in plugin.requirements.before:
             dependencies[before].add(plugin.section)
     return tuple(
         plugins[plugin_name]

@@ -132,18 +132,6 @@ class SectionPlugin(NamedTuple):
     digest: Callable[[Node], Any]
     requirements: PluginRequirements
 
-    @property
-    def required(self):
-        return self.requirements.required
-
-    @property
-    def before(self):
-        return self.requirements.before
-
-    @property
-    def after(self):
-        return self.requirements.after
-
     @classmethod
     def load(cls, entry_point: EntryPoint) -> "SectionPlugin":
         """
@@ -197,7 +185,7 @@ def load_configuration(
         try:
             section_data = config_data[plugin.section]
         except KeyError:
-            if plugin.required:
+            if plugin.requirements.required:
                 raise ConfigurationError(
                     where="root", what="missing section {plugin.section!r}"
                 ) from None
