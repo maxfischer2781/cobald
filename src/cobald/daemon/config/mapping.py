@@ -47,8 +47,8 @@ class Translator(object):
     """
 
     def translate_hierarchy(
-        self, structure: N, *, where: str = "", **construct_kwargs
-    ) -> N:
+        self, structure: Node, *, where: str = "", **construct_kwargs: Any
+    ) -> Node:
         try:
             if isinstance(structure, dict):
                 structure = {
@@ -80,11 +80,11 @@ class Translator(object):
         except Exception as err:
             raise ConfigurationError(where=where, what=err) from err
 
-    def construct(self, mapping: dict, **kwargs):
+    def construct(self, mapping: dict[str, Any], **kwargs: Any) -> Any:
         """
         Construct an object from a mapping
 
-        :param mapping: constructor definition, with ``__type__`` and keyword arguments
+        :param mapping: constructor definition, with ``__type__`` and positional ``__args__``
         :param kwargs: additional keyword arguments to pass to the constructor
         """
         assert "__type__" not in kwargs and "__args__" not in kwargs
@@ -95,7 +95,7 @@ class Translator(object):
         return factory(*args, **mapping)
 
     @staticmethod
-    def load_name(absolute_name: str):
+    def load_name(absolute_name: str) -> Any:
         """Load an object based on an absolute, dotted name"""
         path = absolute_name.split(".")
         try:
@@ -104,21 +104,21 @@ class Translator(object):
             try:
                 obj = sys.modules[path[0]]
             except KeyError:
-                raise ImportError("No module named %r" % path[0]) from None
+                raise ImportError(f"No module named {path[0]!r}") from None
             else:
                 for component in path[1:]:
                     try:
                         obj = getattr(obj, component)
                     except AttributeError as err:
                         raise ConfigurationError(
-                            what="no such object %r" % absolute_name
+                            what=f"no such object {absolute_name!r}"
                         ) from err
                 return obj
         else:  # ImportError is not raised if ``absolute_name`` points to a valid module
             return sys.modules[absolute_name]
 
 
-class SectionPlugin(Generic[N]):
+class SectionPlugin:
     """
     Plugin to digest a top-level configuration section
 
@@ -183,8 +183,8 @@ class SectionPlugin(Generic[N]):
 
 
 def load_configuration(
-    config_data: Dict[str, Any], plugins: Tuple[SectionPlugin] = ()
-) -> Dict[SectionPlugin, Any]:
+    config_data: dict[str, Any], plugins: tuple[SectionPlugin, ...] = ()
+) -> dict[SectionPlugin, Any]:
     """
     Load the configuration from a mapping, applying plugins to sections
 
