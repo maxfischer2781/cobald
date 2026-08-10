@@ -97,10 +97,11 @@ class Translator(object):
     @staticmethod
     def load_name(absolute_name: str) -> Any:
         """Load an object based on an absolute, dotted name"""
-        path = absolute_name.split(".")
+        # __import__ loads everything, but does not fetch the element
         try:
             __import__(absolute_name)
         except ImportError:
+            path = absolute_name.split(".")
             try:
                 obj = sys.modules[path[0]]
             except KeyError:
