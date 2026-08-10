@@ -5,7 +5,7 @@ from typing import Any, Dict, TypeVar, Callable, Tuple, Generic
 
 from entrypoints import EntryPoint
 
-from ..plugins import PluginRequirements
+from ..plugins import PluginRequirements, _PLUGIN_REQUIREMENTS
 
 _logger = logging.getLogger(__package__)
 
@@ -161,7 +161,7 @@ class SectionPlugin(Generic[M]):
             This plugin must be processed after ``other``.
         """
         digest = entry_point.load()
-        requirements = getattr(digest, "__requirements__", PluginRequirements())
+        requirements = _PLUGIN_REQUIREMENTS[digest]
         if entry_point.extras:
             raise ValueError(
                 f"SectionPlugin entry point {entry_point.name!r}:"

@@ -6,7 +6,7 @@ from yaml import SafeLoader, BaseLoader
 from entrypoints import get_group_all as get_entrypoints
 from toposort import toposort_flatten
 
-from ..plugins import constraints as plugin_constraints, YAMLTagSettings
+from ..plugins import constraints as plugin_constraints, _YAML_SETTINGS
 from ..config.yaml import (
     load_configuration as load_yaml_configuration,
     yaml_constructor,
@@ -42,7 +42,7 @@ def add_constructor_plugins(entry_point_group: str, loader: Type[BaseLoader]) ->
             pipeline_factory = entry.load().s
         except AttributeError:
             pipeline_factory = entry.load()
-        settings = YAMLTagSettings.fetch(pipeline_factory)
+        settings = _YAML_SETTINGS[pipeline_factory]
         loader.add_constructor(
             tag="!" + entry.name,
             constructor=yaml_constructor(pipeline_factory, eager=settings.eager),
