@@ -1,7 +1,10 @@
+"""
+Load a configuration from a mapping-like data format matching JSON and YAML
+"""
+from typing import Any, Callable, Generic, TypeVar, TypeAlias
 import logging
 import logging.config
 import sys
-from typing import Any, Dict, TypeVar, Callable, Tuple, Generic
 
 from entrypoints import EntryPoint
 
@@ -12,7 +15,8 @@ _logger = logging.getLogger(__package__)
 
 T = TypeVar("T")
 #: type of a mapping element, matching JSON/YAML
-M = TypeVar("M", str, int, float, bool, dict, list)
+Node: TypeAlias = "str | int | float | dict[str, Node] | list[Node]"
+N = TypeVar("N", bound=Node)
 
 
 class ConfigurationError(Exception):
@@ -43,8 +47,8 @@ class Translator(object):
     """
 
     def translate_hierarchy(
-        self, structure: M, *, where: str = "", **construct_kwargs
-    ) -> M:
+        self, structure: N, *, where: str = "", **construct_kwargs
+    ) -> N:
         try:
             if isinstance(structure, dict):
                 structure = {
@@ -114,7 +118,7 @@ class Translator(object):
             return sys.modules[absolute_name]
 
 
-class SectionPlugin(Generic[M]):
+class SectionPlugin(Generic[N]):
     """
     Plugin to digest a top-level configuration section
 
@@ -138,7 +142,7 @@ class SectionPlugin(Generic[M]):
         return self.requirements.after
 
     def __init__(
-        self, section: str, digest: Callable[[M], Any], requirements: PluginRequirements
+        self, section: str, digest: Callable[[N], Any], requirements: PluginRequirements
     ):
         self.section = section
         self.digest = digest
