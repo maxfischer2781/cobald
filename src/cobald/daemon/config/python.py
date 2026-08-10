@@ -1,12 +1,13 @@
 import pathlib
 import importlib.util
+import warnings
 import sys
 import itertools
 
 _unique_module_id = itertools.count()
 
 
-def load_configuration(path):
+def load_configuration(path: str):
     """
     Load a configuration from a module stored at ``path``
 
@@ -15,6 +16,11 @@ def load_configuration(path):
 
     :raises ValueError: if the extension does not mark a known module type
     """
+    warnings.warn(
+        "loading python files is unsupported and may be removed in a future version",
+        DeprecationWarning,
+        stacklevel=1,
+    )
     # largely based on "Importing a source file directly"
     # https://docs.python.org/3/library/importlib.html#importing-a-source-file-directly
     current_index = next(_unique_module_id)
