@@ -24,19 +24,14 @@ def add_constructor_plugins(entry_point_group: str, loader: Type[BaseLoader]) ->
     """
     Add PyYAML constructors from an entry point group to a loader
 
-    :param loader: the PyYAML loader which uses the plugins
+    :param loader: the PyYAML loader which should use the plugins
     :param entry_point_group: entry point group to search
-
-    .. note::
-
-        This directly modifies the ``loader`` by
-        calling :py:meth:`~.BaseLoader.add_constructor`.
     """
     for entry in get_entrypoints(entry_point_group):
-        if entry.name[0] == "!":
+        if entry.name.startswith("!"):
             raise RuntimeError(
-                "plugin name %r in entry point group %r may not start with '!'"
-                % (entry.name, entry_point_group)
+                f"plugin name {entry.name!r} in entry point group {entry_point_group!r}"
+                " may not start with '!'"
             )
         try:
             pipeline_factory = entry.load().s
