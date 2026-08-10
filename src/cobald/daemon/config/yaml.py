@@ -1,6 +1,6 @@
 from typing import Type, Tuple, Callable, TypeVar
 
-from yaml import SafeLoader, BaseLoader, nodes
+from yaml import SafeLoader, nodes
 
 from .mapping import (
     load_configuration as load_mapping_configuration,
@@ -12,7 +12,9 @@ R = TypeVar("R")
 
 
 def load_configuration(
-    path: str, loader: Type[BaseLoader] = SafeLoader, plugins: Tuple[SectionPlugin] = ()
+    path: str,
+    loader: Type[SafeLoader] = SafeLoader,
+    plugins: Tuple[SectionPlugin, ...] = (),
 ):
     with open(path) as yaml_stream:
         loader_instance = loader(yaml_stream)
@@ -53,7 +55,7 @@ def yaml_constructor(
     constructor.
     """
 
-    def factory_constructor(loader: BaseLoader, node: nodes.Node):
+    def factory_constructor(loader: SafeLoader, node: nodes.Node):
         if isinstance(node, nodes.MappingNode):
             kwargs = loader.construct_mapping(node, deep=eager)
             return factory(**kwargs)

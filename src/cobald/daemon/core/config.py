@@ -1,3 +1,4 @@
+from typing import Any
 import os
 from contextlib import contextmanager
 
@@ -11,7 +12,7 @@ from ..config.yaml import (
     yaml_constructor,
 )
 from ..config.python import load_configuration as load_python_configuration
-from ..config.mapping import Translator, SectionPlugin
+from ..config.mapping import Node, Translator, SectionPlugin
 from ...interfaces._partial import Partial
 
 
@@ -43,7 +44,7 @@ def add_constructor_plugins(entry_point_group: str, loader: type[SafeLoader]) ->
         )
 
 
-def load_section_plugins(entry_point_group: str) -> tuple[SectionPlugin]:
+def load_section_plugins(entry_point_group: str) -> tuple[SectionPlugin, ...]:
     """
     Load configuration plugins from an entry point group
 
@@ -123,7 +124,9 @@ class PipelineTranslator(Translator):
             - __type__: package.module.Pool
     """
 
-    def translate_hierarchy(self, structure, *, where="", **construct_kwargs):
+    def translate_hierarchy(
+        self, structure: Node, *, where: str = "", **construct_kwargs: Any
+    ) -> Node:
         try:
             pipeline = structure["pipeline"]
         except (KeyError, TypeError):
