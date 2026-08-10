@@ -1,6 +1,5 @@
 import os
 from contextlib import contextmanager
-from typing import Type, Tuple, Dict, Set
 
 from yaml import SafeLoader, BaseLoader
 from entrypoints import get_group_all as get_entrypoints
@@ -20,7 +19,7 @@ class COBalDLoader(SafeLoader):
     """Loader with access to COBalD configuration constructors"""
 
 
-def add_constructor_plugins(entry_point_group: str, loader: Type[BaseLoader]) -> None:
+def add_constructor_plugins(entry_point_group: str, loader: type[SafeLoader]) -> None:
     """
     Add PyYAML constructors from an entry point group to a loader
 
@@ -44,18 +43,18 @@ def add_constructor_plugins(entry_point_group: str, loader: Type[BaseLoader]) ->
         )
 
 
-def load_section_plugins(entry_point_group: str) -> Tuple[SectionPlugin]:
+def load_section_plugins(entry_point_group: str) -> tuple[SectionPlugin]:
     """
     Load configuration plugins from an entry point group
 
     :param entry_point_group: entry point group to search
     :return: all loaded plugins
     """
-    plugins: Dict[str, SectionPlugin] = {
+    plugins: dict[str, SectionPlugin] = {
         plugin.section: plugin
         for plugin in map(SectionPlugin.load, get_entrypoints(entry_point_group))
     }
-    dependencies: Dict[str, Set[str]] = {
+    dependencies: dict[str, set[str]] = {
         plugin.section: set(plugin.after) for plugin in plugins.values()
     }
     for plugin in plugins.values():
@@ -78,7 +77,7 @@ def load(config_path: str):
     # we bind the config to c to keep it alive
     if os.path.splitext(config_path)[1] in (".yaml", ".yml"):
         add_constructor_plugins(
-            "cobald.config.yaml_constructors", COBalDLoader  # type: ignore
+            "cobald.config.yaml_constructors", COBalDLoader
         )
         config_plugins = load_section_plugins("cobald.config.sections")
         c = load_yaml_configuration(
