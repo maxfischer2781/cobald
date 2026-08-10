@@ -1,7 +1,7 @@
 """
 Load a configuration from a mapping-like data format matching JSON and YAML
 """
-from typing import Any, Callable, Generic, TypeVar, TypeAlias
+from typing import Any, Callable, NamedTuple, TypeVar, TypeAlias
 import logging
 import logging.config
 import sys
@@ -119,7 +119,7 @@ class Translator(object):
             return sys.modules[absolute_name]
 
 
-class SectionPlugin:
+class SectionPlugin(NamedTuple):
     """
     Plugin to digest a top-level configuration section
 
@@ -128,7 +128,9 @@ class SectionPlugin:
     :param requirements: plugin requirements
     """
 
-    __slots__ = "section", "digest", "requirements"
+    section: str
+    digest: Callable[[Node], Any]
+    requirements: PluginRequirements
 
     @property
     def required(self):
@@ -141,13 +143,6 @@ class SectionPlugin:
     @property
     def after(self):
         return self.requirements.after
-
-    def __init__(
-        self, section: str, digest: Callable[[N], Any], requirements: PluginRequirements
-    ):
-        self.section = section
-        self.digest = digest
-        self.requirements = requirements
 
     @classmethod
     def load(cls, entry_point: EntryPoint) -> "SectionPlugin":
@@ -173,14 +168,6 @@ class SectionPlugin:
                 f" extras are no longer supported"
             )
         return cls(section=entry_point.name, digest=digest, requirements=requirements)
-
-    def __repr__(self):
-        return (
-            f"{self.__class__.__name__}"
-            f"(section={self.section},"
-            f" digest={self.digest},"
-            f" requirements={self.requirements})"
-        )
 
 
 def load_configuration(
