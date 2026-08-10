@@ -64,8 +64,8 @@ def yaml_tag(*, eager: bool = False) -> Callable[[P], P]:
     :param eager: whether the YAML content must be evaluated eagerly
 
     Since YAML can express recursive data, nested data structures are evaluated lazily
-    by default. This means a constructor receives nested data structures
-    (e.g. a ``dict`` of ``dict``s) upfront but nested content is added later on.
+    by default. This means a constructor receives mutable nested data structures
+    (e.g. a ``dict[..., list[...]]``) upfront but nested content is added later on.
     If a constructor requires the entire data at once, set ``eager=True`` to enforce
     eager evaluation before calling the constructor.
 
