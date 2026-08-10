@@ -136,11 +136,7 @@ class SectionPlugin(NamedTuple):
         """Load a plugin from a pre-parsed entry point"""
         digest = entry_point.load()
         requirements = _PLUGIN_REQUIREMENTS[digest]
-        if entry_point.extras:
-            raise ValueError(
-                f"SectionPlugin entry point {entry_point.name!r}:"
-                f" extras are no longer supported"
-            )
+        assert not entry_point.extras, "SectionPlugin entry point extras not supported"
         return cls(section=entry_point.name, digest=digest, requirements=requirements)
 
 
