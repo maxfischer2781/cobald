@@ -2,7 +2,7 @@
 Load a configuration from a mapping-like data format matching JSON and YAML
 """
 
-from typing import Any, Callable, NamedTuple, TypeVar, TypeAlias
+from typing import Any, Callable, NamedTuple, TypeAlias
 import logging
 import logging.config
 import sys
@@ -13,11 +13,8 @@ from ..plugins import PluginRequirements, _PLUGIN_REQUIREMENTS
 
 _logger = logging.getLogger(__package__)
 
-
-T = TypeVar("T")
 #: type of a mapping element, matching JSON/YAML
 Node: TypeAlias = "str | int | float | dict[str, Node] | list[Node]"
-N = TypeVar("N", bound=Node)
 
 
 class ConfigurationError(Exception):
