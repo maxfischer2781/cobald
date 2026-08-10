@@ -83,7 +83,7 @@ class Translator(object):
         """
         Construct an object from a mapping
 
-        :param mapping: constructor definition, with ``__type__`` and positional ``__args__``
+        :param mapping: definition with ``__type__`` and optional ``__args__``
         :param kwargs: additional keyword arguments to pass to the constructor
         """
         assert "__type__" not in kwargs and "__args__" not in kwargs

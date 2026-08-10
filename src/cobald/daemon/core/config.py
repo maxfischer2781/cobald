@@ -1,7 +1,7 @@
 import os
 from contextlib import contextmanager
 
-from yaml import SafeLoader, BaseLoader
+from yaml import SafeLoader
 from entrypoints import get_group_all as get_entrypoints
 from toposort import toposort_flatten
 
