@@ -133,20 +133,7 @@ class SectionPlugin(NamedTuple):
 
     @classmethod
     def load(cls, entry_point: EntryPoint) -> "SectionPlugin":
-        """
-        Load a plugin from a pre-parsed entry point
-
-        Parses the following options:
-
-        ``required``
-            If present implies ``required=True``.
-
-        ``before=other``
-            This plugin must be processed before ``other``.
-
-        ``after=other``
-            This plugin must be processed after ``other``.
-        """
+        """Load a plugin from a pre-parsed entry point"""
         digest = entry_point.load()
         requirements = _PLUGIN_REQUIREMENTS[digest]
         if entry_point.extras:
