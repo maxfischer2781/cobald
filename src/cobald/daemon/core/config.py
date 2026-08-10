@@ -76,9 +76,7 @@ def load(config_path: str):
     """
     # we bind the config to c to keep it alive
     if os.path.splitext(config_path)[1] in (".yaml", ".yml"):
-        add_constructor_plugins(
-            "cobald.config.yaml_constructors", COBalDLoader
-        )
+        add_constructor_plugins("cobald.config.yaml_constructors", COBalDLoader)
         config_plugins = load_section_plugins("cobald.config.sections")
         c = load_yaml_configuration(
             config_path,

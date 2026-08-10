@@ -1,6 +1,7 @@
 """
 Load a configuration from a mapping-like data format matching JSON and YAML
 """
+
 from typing import Any, Callable, NamedTuple, TypeVar, TypeAlias
 import logging
 import logging.config
@@ -64,9 +65,7 @@ class Translator(object):
                 return list(
                     reversed(
                         [
-                            self.translate_hierarchy(
-                                item, where=f"{where}[{index}]"
-                            )
+                            self.translate_hierarchy(item, where=f"{where}[{index}]")
                             for index, item in reversed(list(enumerate(structure)))
                         ]
                     )
