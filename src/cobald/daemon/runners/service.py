@@ -114,17 +114,12 @@ def service(flavour: ModuleType) -> Callable[[type[S]], type[S]]:
 
 class ServiceRunner:
     """
-    Runner for coroutines, subroutines and services
+    Runner for services
 
-    The service runner prevents silent failures by tracking concurrent tasks
-    and therefore provides safer concurrency.
-    If any task fails with an exception or provides
-    unexpected output values, this is registered as an error; the runner will
-    gracefully shut down all tasks in this case.
-
-    To provide ``async`` concurrency, the runner also manages common
-    ``async`` event loops and tracks them for failures as well. As a result,
-    ``async`` code should usually use the "current" event loop directly.
+    The service runner runs services and tracks their concurrent tasks
+    to provide safe background concurrency.
+    If any task fails with an exception or provides unexpected output values,
+    this is registered as an error; the runner will gracefully shut down all tasks in this case.
     """
 
     def __init__(self, accept_delay: float = 1):
