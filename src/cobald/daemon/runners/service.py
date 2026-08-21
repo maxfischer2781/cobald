@@ -77,11 +77,8 @@ class ServiceUnit:
             runner.register_payload(service.run, flavour=self.flavour)
 
     def __repr__(self):
-        return "%s(%r, flavour=%r)" % (
-            self.__class__.__name__,
-            self.service() or "<defunct>",
-            self.flavour,
-        )
+        service = self.service() or "<defunct>"
+        return f"{self.__class__.__name__}({service}, flavour={self.flavour!r})"
 
 
 def service(flavour: ModuleType) -> Callable[[type[S]], type[S]]:
