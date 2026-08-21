@@ -1,5 +1,5 @@
 from ._pool import Pool
-from typing import TypeVar, Type
+from typing import Any, TypeVar, Type
 
 from ._partial import Partial
 
@@ -17,7 +17,7 @@ class PoolDecorator(Pool):
         self.target = target
 
     @classmethod
-    def s(cls: Type[C], *args, **kwargs) -> Partial[C]:
+    def s(cls: Type[C], *args: Any, **kwargs: Any) -> Partial[C]:
         """
         Create an unbound prototype of this class, partially applying arguments
 
@@ -30,17 +30,17 @@ class PoolDecorator(Pool):
         return Partial(cls, *args, __leaf__=False, **kwargs)
 
     @property
-    def supply(self):
+    def supply(self) -> float:
         """The volume of resources that is provided by this site"""
         return self.target.supply
 
     @property
-    def demand(self):
+    def demand(self) -> float:
         """The volume of resources to be provided by this site"""
         return self.target.demand
 
     @demand.setter
-    def demand(self, value):
+    def demand(self, value: float) -> None:
         self.target.demand = value
 
     @property
