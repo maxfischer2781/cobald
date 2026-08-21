@@ -156,7 +156,7 @@ def load_configuration(
     # see if there is any unexpected config content
     if unmatched := config_data.keys() - {plugin.section for plugin in plugins}:
         raise ConfigurationError(
-            where="root", what=f"unknown config sections {", ".join(unmatched)}"
+            where="root", what=f"unknown config sections {', '.join(unmatched)}"
         )
     content: dict[SectionPlugin, Any] = {}
     for plugin in plugins:
