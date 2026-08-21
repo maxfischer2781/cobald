@@ -210,7 +210,7 @@ class ServiceRunner:
             # the task group keeps a strong reference to its tasks, we can forget about them
             asyncio_tg.create_task(service.run(), name=str(service))
         elif unit.flavour is threading:
-            thread = threading.Thread(target=self._monitor_thread, args=(service,), daemon=True)
+            thread = threading.Thread(target=self._monitor_run, args=(service.run,), daemon=True)
             thread.run()
         elif unit.flavour is trio:
             warnings.warn(
@@ -221,18 +221,18 @@ class ServiceRunner:
             )
             raise NotImplementedError("TODO")
 
-    def _monitor_run(self, service: Service) -> None:
+    def _monitor_run(self, payload: Callable[[], None]) -> None:
         """Run `service` synchronously and report any failures"""
         assert self._state is not None
         interrupts = self._state.interrupts
         try:
-            result = service.run()
+            result = payload()
         except BaseException as e:  # noqa: B036
             failure = e
         else:
             if result is None:
                 return
-            failure = RuntimeError(f"service {service} returned unexpected {result}")
+            failure = RuntimeError(f"payload {payload} returned unexpected {result}")
         asyncio.get_running_loop().call_soon_threadsafe(
             interrupts.put_nowait, (None, failure)
         )
