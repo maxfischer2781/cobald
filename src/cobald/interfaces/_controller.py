@@ -1,4 +1,4 @@
-from typing import TypeVar, Type
+from typing import Any, TypeVar
 import abc
 
 from ._pool import Pool
@@ -18,7 +18,7 @@ class Controller(metaclass=abc.ABCMeta):  # noqa: B024
         self.target = target
 
     @classmethod
-    def s(cls: Type[C], *args, **kwargs) -> Partial[C]:
+    def s(cls: type[C], *args: Any, **kwargs: Any) -> Partial[C]:
         """
         Create an unbound prototype of this class, partially applying arguments
 
