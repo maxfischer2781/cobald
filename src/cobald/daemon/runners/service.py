@@ -89,11 +89,7 @@ def service(flavour: ModuleType) -> Callable[[type[S]], type[S]]:
     Mark a class as implementing a Service
 
     Each Service class must have a ``run`` method, which does not take any arguments.
-    This method is :py:meth:`~.ServiceRunner.adopt`\ ed after the daemon starts,
-    unless the Service has been garbage collected
-
-    For each service instance, its :py:class:`~.ServiceUnit` is available at
-    ``service_instance.__service_unit__``.
+    The :py:class:`~.ServiceRunner` will automatically execute this concurrently when active.
     """
 
     def service_unit_decorator(raw_cls: type[S]) -> type[S]:
