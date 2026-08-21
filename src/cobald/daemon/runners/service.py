@@ -55,7 +55,7 @@ class ServiceUnit:
         )
         self.service = weakref.ref(service)
         self.flavour = flavour
-        self._started = False
+        self.started = False
         ServiceUnit.__defined_units__.add(self)
 
     @classmethod
@@ -66,14 +66,14 @@ class ServiceUnit:
     @property
     def running(self):
         """Whether this specific service is running"""
-        return self._started
+        return self.started
 
     def start(self, runner: MetaRunner):
         service = self.service()
         if service is None:
             return
         else:
-            self._started = True
+            self.started = True
             runner.register_payload(service.run, flavour=self.flavour)
 
     def __repr__(self):
