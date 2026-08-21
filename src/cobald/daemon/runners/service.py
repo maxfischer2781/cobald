@@ -1,6 +1,7 @@
 from typing import Any, Coroutine, Callable, TypeVar, Protocol
 import asyncio
 import logging
+import warnings
 import weakref
 import functools
 import threading
@@ -148,6 +149,12 @@ class ServiceRunner:
         If ``*args*`` and/or ``**kwargs`` are provided, pass them to ``payload``
         upon execution.
         """
+        warnings.warn(
+            DeprecationWarning(
+                f"'runtime.execute' is deprecated, directly use {flavour.__name__}"
+            ),
+            stacklevel=2,
+        )
         if args or kwargs:
             payload = functools.partial(payload, *args, **kwargs)
         return self._meta_runner.run_payload(payload, flavour=flavour)
@@ -161,6 +168,12 @@ class ServiceRunner:
         If ``*args*`` and/or ``**kwargs`` are provided, pass them to ``payload``
         upon execution.
         """
+        warnings.warn(
+            DeprecationWarning(
+                f"'runtime.execute' is deprecated, directly use {flavour.__name__}"
+            ),
+            stacklevel=2,
+        )
         if args or kwargs:
             payload = functools.partial(payload, *args, **kwargs)
         self._meta_runner.register_payload(payload, flavour=flavour)
