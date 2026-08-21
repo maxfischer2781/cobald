@@ -130,6 +130,8 @@ class ServiceRunner:
         self._state: RunnerState | None = None
         self._meta_runner: MetaRunner | None = None
 
+    # MetaRunner legacy support
+    # Only spawn the runner if needed, which is hopefully never
     def _get_runner(self) -> MetaRunner:
         if self._meta_runner is None:
             self._meta_runner = MetaRunner()
