@@ -1,10 +1,11 @@
-from typing import Any, Coroutine, Callable, TypeVar, Protocol
+from typing import Any, Coroutine, Callable, NamedTuple, TypeVar, Protocol, NoReturn
 import asyncio
 import logging
 import warnings
 import weakref
 import functools
 import threading
+import trio
 
 from types import ModuleType
 
@@ -109,6 +110,11 @@ def service(flavour: ModuleType) -> Callable[[type[S]], type[S]]:
     return service_unit_decorator
 
 
+class RunnerState(NamedTuple):
+    tasks: asyncio.TaskGroup
+    interrupts: asyncio.Queue[tuple[ServiceUnit, None] | tuple[None, BaseException]]
+
+
 class ServiceRunner:
     """
     Runner for services
@@ -121,6 +127,7 @@ class ServiceRunner:
 
     def __init__(self, accept_delay: float = 1):
         self._logger = logging.getLogger("cobald.runtime.daemon.services")
+        self._state: RunnerState | None = None
         self._meta_runner = MetaRunner()
         self._must_shutdown = False
         self._is_shutdown = threading.Event()
@@ -165,6 +172,50 @@ class ServiceRunner:
         if args or kwargs:
             payload = functools.partial(payload, *args, **kwargs)
         self._meta_runner.register_payload(payload, flavour=flavour)
+
+    @exclusive()
+    async def run(self) -> NoReturn:
+        """
+        Continuously run services
+
+        Since services are globally defined, only one :py:class:`ServiceRunner`
+        may :py:meth:`~.run` payloads at any time.
+        """
+        self._logger.info("%s starting", self.__class__.__name__)
+        async with asyncio.TaskGroup() as tg:
+            _, interrupts = self._state = RunnerState(tg, asyncio.Queue())
+            # spawn existing units
+            for unit in ServiceUnit.units():
+                self._spawn_service(unit)
+            # wait for new units or errors
+            while True:
+                unit, exc = await interrupts.get()
+                if exc is not None:
+                    raise exc
+                elif unit is not None:
+                    self._spawn_service(unit)
+
+    def _spawn_service(self, unit: ServiceUnit) -> None:
+        assert self._state is not None, "cannot spawn outside of run context"
+        asyncio_tg = self._state.tasks
+        if unit.started or (service := unit.service()) is None:
+            return
+        unit.started = True
+        self._logger.info("%s adopts %s", self.__class__.__name__, NameRepr(unit))
+        if unit.flavour is asyncio:
+            # the task group keeps a strong reference to its tasks, we can forget about them
+            asyncio_tg.create_task(service.run(), name=str(service))
+        elif unit.flavour is threading:
+            thread = threading.Thread(target=service.run, daemon=True)
+            thread.run()
+        elif unit.flavour is trio:
+            warnings.warn(
+                DeprecationWarning(
+                    f"trio services are deprecated, please use asyncio for {unit}"
+                ),
+                stacklevel=2,
+            )
+            raise NotImplementedError("TODO")
 
     @exclusive()
     def accept(self) -> None:
