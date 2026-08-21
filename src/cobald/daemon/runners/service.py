@@ -128,12 +128,14 @@ class ServiceRunner:
     def __init__(self, accept_delay: float = 1):
         self._logger = logging.getLogger("cobald.runtime.daemon.services")
         self._state: RunnerState | None = None
-        self._meta_runner = MetaRunner()
-        self._must_shutdown = False
-        self._is_shutdown = threading.Event()
-        self._is_shutdown.set()
-        self.running = threading.Event()
-        self.accept_delay = accept_delay
+        self._meta_runner: MetaRunner | None = None
+
+    def _get_runner(self) -> MetaRunner:
+        if self._meta_runner is None:
+            self._meta_runner = MetaRunner()
+            thread = threading.Thread(target=self._meta_runner.run, daemon=True)
+            thread.start()
+        return self._meta_runner
 
     def execute(
         self, payload: Callable[..., T], *args: Any, flavour: ModuleType, **kwargs: Any
@@ -152,7 +154,7 @@ class ServiceRunner:
         )
         if args or kwargs:
             payload = functools.partial(payload, *args, **kwargs)
-        return self._meta_runner.run_payload(payload, flavour=flavour)
+        return self._get_runner().run_payload(payload, flavour=flavour)
 
     def adopt(
         self, payload: Callable[..., T], *args: Any, flavour: ModuleType, **kwargs: Any
@@ -171,7 +173,7 @@ class ServiceRunner:
         )
         if args or kwargs:
             payload = functools.partial(payload, *args, **kwargs)
-        self._meta_runner.register_payload(payload, flavour=flavour)
+        self._get_runner().register_payload(payload, flavour=flavour)
 
     @exclusive()
     async def run(self) -> NoReturn:
@@ -232,50 +234,3 @@ class ServiceRunner:
         asyncio.get_running_loop().call_soon_threadsafe(
             interrupts.put_nowait, (None, failure)
         )
-
-    @exclusive()
-    def accept(self) -> None:
-        """
-        Start accepting synchronous, asynchronous and service payloads
-
-        Since services are globally defined, only one :py:class:`ServiceRunner`
-        may :py:meth:`accept` payloads at any time.
-        """
-        self._must_shutdown = False
-        self._logger.info("%s starting", self.__class__.__name__)
-        self.adopt(self._accept_services, flavour=asyncio)
-        self._meta_runner.run()
-
-    def shutdown(self) -> None:
-        """Shutdown the accept loop and stop running payloads"""
-        self._must_shutdown = True
-        self._is_shutdown.wait()
-        self._meta_runner.stop()
-
-    async def _accept_services(self) -> None:
-        delay, max_delay, increase = 0.0, self.accept_delay, self.accept_delay / 10
-        self._is_shutdown.clear()
-        self.running.set()
-        try:
-            self._logger.info("%s started", self.__class__.__name__)
-            while not self._must_shutdown:
-                self._adopt_services()
-                await asyncio.sleep(delay)
-                delay = min(delay + increase, max_delay)
-        except asyncio.CancelledError:
-            self._logger.info("%s cancelled", self.__class__.__name__)
-        except BaseException:
-            self._logger.exception("%s aborted", self.__class__.__name__)
-            raise
-        else:
-            self._logger.info("%s stopped", self.__class__.__name__)
-        finally:
-            self.running.clear()
-            self._is_shutdown.set()
-
-    def _adopt_services(self):
-        for unit in ServiceUnit.units():
-            if unit.running:
-                continue
-            self._logger.info("%s adopts %s", self.__class__.__name__, NameRepr(unit))
-            unit.start(self._meta_runner)
