@@ -109,8 +109,6 @@ def service(flavour: ModuleType) -> Callable[[type[S]], type[S]]:
 
     return service_unit_decorator
 
-CC = TypeVar("CC", bound=Callable[..., Coroutine[Any, Any, Any]])
-
 
 class RunningState(NamedTuple):
     """State of an active :py:class:`~.ServiceRunner`"""
