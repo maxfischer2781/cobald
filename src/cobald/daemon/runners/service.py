@@ -150,7 +150,7 @@ class ServiceRunner:
     def _get_runner(self) -> MetaRunner:
         if self._meta_runner is None:
             self._meta_runner = MetaRunner()
-            thread = threading.Thread(target=self._meta_runner.run, daemon=True)
+            thread = threading.Thread(target=self._monitor_run, args=(self._meta_runner.run,), daemon=True)
             thread.start()
         return self._meta_runner
 
@@ -217,6 +217,9 @@ class ServiceRunner:
             finally:
                 ServiceRunner._running_instance = None
                 self._state = None
+                if self._meta_runner is not None:
+                    self._meta_runner.stop()
+                    self._meta_runner = None
                 self._exclusive_run.release()
         else:
             raise RuntimeError("only one 'run_services' allowed at once")
