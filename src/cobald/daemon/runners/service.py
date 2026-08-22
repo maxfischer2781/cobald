@@ -111,31 +111,6 @@ def service(flavour: ModuleType) -> Callable[[type[S]], type[S]]:
 CC = TypeVar("CC", bound=Callable[..., Coroutine[Any, Any, Any]])
 
 
-def _exclusive_await() -> Callable[[CC], CC]:
-    """
-    Mark an async method for globally unique execution
-
-    :raises RuntimeError: if the method (across any instance) is awaited more than once
-    """
-
-    def make_exclusive(fnc: CC) -> CC:
-        fnc_guard = threading.Lock()
-
-        @functools.wraps(fnc)
-        async def exclusive_await(*args: Any, **kwargs: Any) -> Any:
-            if fnc_guard.acquire(blocking=False):
-                try:
-                    return await fnc(*args, **kwargs)
-                finally:
-                    fnc_guard.release()
-            else:
-                raise RuntimeError("exclusive await of %s violated")
-
-        return exclusive_await
-
-    return make_exclusive
-
-
 class RunnerState(NamedTuple):
     tasks: asyncio.TaskGroup
     interrupts: asyncio.Queue[tuple[ServiceUnit, None] | tuple[None, BaseException]]
@@ -150,6 +125,9 @@ class ServiceRunner:
     If any task fails with an exception or provides unexpected output values,
     this is registered as an error; the runner will gracefully shut down all tasks in this case.
     """
+
+    _exclusive_run = threading.Lock()
+    running_instance: "ServiceRunner | None" = None
 
     def __init__(self, accept_delay: float = 1):
         self._logger = logging.getLogger("cobald.runtime.daemon.services")
@@ -203,14 +181,24 @@ class ServiceRunner:
             payload = functools.partial(payload, *args, **kwargs)
         self._get_runner().register_payload(payload, flavour=flavour)
 
-    @_exclusive_await()
     async def run_services(self) -> NoReturn:
         """
         Continuously run services
 
         Since services are globally defined, only one :py:class:`ServiceRunner`
-        may :py:meth:`~.run` payloads at any time.
+        may :py:meth:`~.run_services` at any time.
         """
+        if self._exclusive_run.acquire(blocking=False):
+            ServiceRunner.running_instance = self
+            try:
+                return await self._run_services()
+            finally:
+                ServiceRunner.running_instance = None
+                self._exclusive_run.release()
+        else:
+            raise RuntimeError("only one 'run_services' allowed at once")
+
+    async def _run_services(self) -> NoReturn:
         self._logger.info("%s starting", self.__class__.__name__)
         async with asyncio.TaskGroup() as tg:
             _, interrupts = self._state = RunnerState(tg, asyncio.Queue())
