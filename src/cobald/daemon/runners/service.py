@@ -69,14 +69,6 @@ class ServiceUnit:
         """Whether this specific service is running"""
         return self.started
 
-    def start(self, runner: MetaRunner):
-        service = self.service()
-        if service is None:
-            return
-        else:
-            self.started = True
-            runner.register_payload(service.run, flavour=self.flavour)
-
     def __repr__(self):
         service = self.service() or "<defunct>"
         return f"{self.__class__.__name__}({service}, flavour={self.flavour!r})"
