@@ -53,7 +53,9 @@ class ServiceUnit:
         self.flavour = flavour
         #: whether the unit was ever started
         self.started = False
+        # make the unit visible to the service runner(s)
         ServiceUnit.__defined_units__.add(self)
+        ServiceRunner.notify(self)
 
     @classmethod
     def units(cls) -> "set[ServiceUnit]":
