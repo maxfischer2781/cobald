@@ -10,7 +10,6 @@ import trio
 from types import ModuleType
 
 from .meta_runner import MetaRunner
-from .guard import exclusive
 from ..debug import NameRepr
 
 T = TypeVar("T")
@@ -109,6 +108,33 @@ def service(flavour: ModuleType) -> Callable[[type[S]], type[S]]:
 
     return service_unit_decorator
 
+CC = TypeVar("CC", bound=Callable[..., Coroutine[Any, Any, Any]])
+
+
+def _exclusive_await() -> Callable[[CC], CC]:
+    """
+    Mark an async method for globally unique execution
+
+    :raises RuntimeError: if the method (across any instance) is awaited more than once
+    """
+
+    def make_exclusive(fnc: CC) -> CC:
+        fnc_guard = threading.Lock()
+
+        @functools.wraps(fnc)
+        async def exclusive_await(*args: Any, **kwargs: Any) -> Any:
+            if fnc_guard.acquire(blocking=False):
+                try:
+                    return await fnc(*args, **kwargs)
+                finally:
+                    fnc_guard.release()
+            else:
+                raise RuntimeError("exclusive await of %s violated")
+
+        return exclusive_await
+
+    return make_exclusive
+
 
 class RunnerState(NamedTuple):
     tasks: asyncio.TaskGroup
@@ -177,8 +203,8 @@ class ServiceRunner:
             payload = functools.partial(payload, *args, **kwargs)
         self._get_runner().register_payload(payload, flavour=flavour)
 
-    @exclusive()
-    async def run(self) -> NoReturn:
+    @_exclusive_await()
+    async def run_services(self) -> NoReturn:
         """
         Continuously run services
 
