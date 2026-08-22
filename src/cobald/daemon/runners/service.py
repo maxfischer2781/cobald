@@ -127,6 +127,9 @@ class RunningState(NamedTuple):
         async with self.tasks:
             yield self
 
+    def put_threadsafe(self, message: tuple[ServiceUnit, None] | tuple[None, BaseException]) -> None:
+        self.loop.call_soon_threadsafe(self.interrupts.put_nowait, message)
+
 
 class ServiceRunner:
     """
@@ -251,8 +254,6 @@ class ServiceRunner:
 
     def _monitor_run(self, payload: Callable[[], None]) -> None:
         """Run `payload` synchronously and report any failures"""
-        assert self._state is not None
-        interrupts = self._state.interrupts
         try:
             result = payload()
         except BaseException as e:  # noqa: B036
@@ -261,6 +262,5 @@ class ServiceRunner:
             if result is None:
                 return
             failure = RuntimeError(f"payload {payload} returned unexpected {result}")
-        asyncio.get_running_loop().call_soon_threadsafe(
-            interrupts.put_nowait, (None, failure)
-        )
+        if (state := self._state) is not None:
+            state.put_threadsafe((None, failure))
