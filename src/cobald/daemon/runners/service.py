@@ -6,6 +6,7 @@ import weakref
 import functools
 import threading
 import trio
+import contextlib
 
 from types import ModuleType
 
@@ -111,9 +112,22 @@ def service(flavour: ModuleType) -> Callable[[type[S]], type[S]]:
 CC = TypeVar("CC", bound=Callable[..., Coroutine[Any, Any, Any]])
 
 
-class RunnerState(NamedTuple):
+class RunningState(NamedTuple):
+    """State of an active :py:class:`~.ServiceRunner`"""
+    #: the loop in which the runner is active
+    loop: asyncio.AbstractEventLoop
+    #: service tasks spawned by the runner
     tasks: asyncio.TaskGroup
+    #: queue for new services or exceptions to handle
     interrupts: asyncio.Queue[tuple[ServiceUnit, None] | tuple[None, BaseException]]
+
+    @classmethod
+    @contextlib.asynccontextmanager
+    async def new(cls):
+        loop = asyncio.get_running_loop()
+        self = cls(loop, asyncio.TaskGroup(), asyncio.Queue())
+        async with self.tasks:
+            yield self
 
 
 class ServiceRunner:
@@ -131,7 +145,7 @@ class ServiceRunner:
 
     def __init__(self, accept_delay: float = 1):
         self._logger = logging.getLogger("cobald.runtime.daemon.services")
-        self._state: RunnerState | None = None
+        self._state: RunningState | None = None
         self._meta_runner: MetaRunner | None = None
 
     # MetaRunner legacy support
@@ -194,20 +208,22 @@ class ServiceRunner:
                 return await self._run_services()
             finally:
                 ServiceRunner.running_instance = None
+                self._state = None
                 self._exclusive_run.release()
         else:
             raise RuntimeError("only one 'run_services' allowed at once")
 
     async def _run_services(self) -> NoReturn:
         self._logger.info("%s starting", self.__class__.__name__)
-        async with asyncio.TaskGroup() as tg:
-            _, interrupts = self._state = RunnerState(tg, asyncio.Queue())
+        async with RunningState.new() as state:
+            assert self._state is None
+            self._state = state
             # spawn existing units
             for unit in ServiceUnit.units():
                 self._spawn_service(unit)
             # wait for new units or errors
             while True:
-                unit, exc = await interrupts.get()
+                unit, exc = await state.interrupts.get()
                 if exc is not None:
                     raise exc
                 elif unit is not None:
