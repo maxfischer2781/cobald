@@ -168,8 +168,8 @@ class TestServiceRunner(object):
         runner = ServiceRunner(accept_delay=0.1)
         runner.adopt(do_sleep, 5, flavour=flavour)
         runner.adopt(do_raise, LookupError, flavour=flavour)
-        with pytest.raises(RuntimeError):
-            runner.accept()
+        with pytest.raises(ExceptionGroup):
+            asyncio.run(runner.run_services())
 
     @pytest.mark.parametrize(
         "flavour, do_sleep, do_raise",
