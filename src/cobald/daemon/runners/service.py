@@ -222,7 +222,7 @@ class ServiceRunner:
             raise NotImplementedError("TODO")
 
     def _monitor_run(self, payload: Callable[[], None]) -> None:
-        """Run `service` synchronously and report any failures"""
+        """Run `payload` synchronously and report any failures"""
         assert self._state is not None
         interrupts = self._state.interrupts
         try:
