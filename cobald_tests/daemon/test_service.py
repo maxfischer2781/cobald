@@ -90,7 +90,7 @@ class TestServiceRunner(object):
                 assert replies == 1, "pre-created service did not run"
                 late_created = Service()
                 await late_created.done.wait()
-                assert replies == 1, "late-created service did not run"
+                assert replies == 2, "late-created service did not run"
             runner_task.cancel()
 
         asyncio.run(run_services_automatically())
