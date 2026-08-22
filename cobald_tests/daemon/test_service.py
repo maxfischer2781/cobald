@@ -59,11 +59,13 @@ async def async_raise_signal(what, sleep):
 
 
 class TestServiceRunner(object):
-    def test_unique_reaper(self):
-        """Assert that no two runners may fetch services"""
-        with accept(ServiceRunner(accept_delay=0.1), name="outer"):
-            with pytest.raises(RuntimeError):
-                ServiceRunner(accept_delay=0.1).accept()
+    def test_unique_runner(self):
+        """Assert that no two runners may run services"""
+        async def run_services_twice():
+            return await asyncio.gather(ServiceRunner().run_services(), ServiceRunner().run_services())
+
+        with pytest.raises(RuntimeError):
+            asyncio.run(run_services_twice())
 
     def test_service(self):
         """Test running service classes automatically"""
