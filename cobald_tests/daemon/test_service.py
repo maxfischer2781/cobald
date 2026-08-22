@@ -185,4 +185,5 @@ class TestServiceRunner(object):
         runner.adopt(do_sleep, 5, flavour=flavour)
         # signal.SIGINT == KeyboardInterrupt
         runner.adopt(do_raise, signal.SIGINT, do_sleep, flavour=flavour)
-        runner.accept()
+        with pytest.raises(KeyboardInterrupt):
+            asyncio.run(runner.run_services())
