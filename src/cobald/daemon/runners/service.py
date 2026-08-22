@@ -196,6 +196,17 @@ class ServiceRunner:
             payload = functools.partial(payload, *args, **kwargs)
         self._get_runner().register_payload(payload, flavour=flavour)
 
+    # asyncio based service facilities
+    @classmethod
+    def notify(cls, of: ServiceUnit) -> None:
+        """Notify the running instance (if any) of a new service"""
+        try:
+            put = cls._running_instance._state.put_threadsafe
+        except AttributeError:
+            return
+        else:
+            put((of, None))
+
     async def run_services(self) -> NoReturn:
         """
         Continuously run services
