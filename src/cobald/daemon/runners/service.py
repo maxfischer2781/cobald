@@ -51,6 +51,7 @@ class ServiceUnit:
         assert hasattr(service, "run"), "service must implement a 'run' method"
         self.service = weakref.ref(service)
         self.flavour = flavour
+        #: whether the unit was ever started
         self.started = False
         ServiceUnit.__defined_units__.add(self)
 
@@ -60,8 +61,14 @@ class ServiceUnit:
         return _weakset_copy(cls.__defined_units__)
 
     @property
-    def running(self):
+    def running(self) -> bool:
         """Whether this specific service is running"""
+        warnings.warn(
+            DeprecationWarning(
+                f"'ServiceUnit.running' is deprecated and misleading, use '.started'"
+            ),
+            stacklevel=2,
+        )
         return self.started
 
     def __repr__(self):
