@@ -139,7 +139,7 @@ class ServiceRunner:
     """
 
     _exclusive_run = threading.Lock()
-    running_instance: "ServiceRunner | None" = None
+    _running_instance: "ServiceRunner | None" = None
 
     def __init__(self, accept_delay: float = 1):
         self._logger = logging.getLogger("cobald.runtime.daemon.services")
@@ -201,11 +201,11 @@ class ServiceRunner:
         may :py:meth:`~.run_services` at any time.
         """
         if self._exclusive_run.acquire(blocking=False):
-            ServiceRunner.running_instance = self
+            ServiceRunner._running_instance = self
             try:
                 return await self._run_services()
             finally:
-                ServiceRunner.running_instance = None
+                ServiceRunner._running_instance = None
                 self._state = None
                 self._exclusive_run.release()
         else:
