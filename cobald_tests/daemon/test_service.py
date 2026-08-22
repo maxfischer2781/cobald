@@ -67,28 +67,33 @@ class TestServiceRunner(object):
         with pytest.raises(RuntimeError):
             asyncio.run(run_services_twice())
 
-    def test_service(self):
-        """Test running service classes automatically"""
-        runner = ServiceRunner(accept_delay=0.1)
-        replies = []
+    def test_service_execution(self):
+        """Test that service instances are run automatically"""
+        replies = 0
 
-        @service(flavour=threading)
+        @service(flavour=asyncio)
         class Service(object):
             def __init__(self):
-                self.done = threading.Event()
+                self.done = asyncio.Event()
                 self.done.clear()
 
-            def run(self):
-                replies.append(1)
+            async def run(self):
+                nonlocal replies
+                replies += 1
                 self.done.set()
 
-        a = Service()
-        with accept(runner, name="test_service"):
-            assert a.done.wait(timeout=5), "service thread completed"
-            assert len(replies) == 1, "pre-registered service ran"
-            b = Service()
-            assert b.done.wait(timeout=5), "service thread completed"
-            assert len(replies) == 2, "post-registered service ran"
+        async def run_services_automatically():
+            pre_created = Service()
+            runner_task = asyncio.create_task(ServiceRunner().run_services())
+            async with asyncio.timeout(1):
+                await pre_created.done.wait()
+                assert replies == 1, "pre-created service did not run"
+                late_created = Service()
+                await late_created.done.wait()
+                assert replies == 1, "late-created service did not run"
+            runner_task.cancel()
+
+        asyncio.run(run_services_automatically())
 
     def test_execute(self):
         """Test running payloads synchronously"""
