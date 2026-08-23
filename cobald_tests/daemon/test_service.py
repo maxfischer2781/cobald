@@ -14,23 +14,23 @@ from cobald.daemon.runners.service import ServiceRunner, service
 logging.getLogger().level = 10
 
 
-def sync_raise(what):
+def sync_raise(what: BaseException):
     logging.info(f"raising {what}")
     raise what
 
 
-async def async_raise(what):
+async def async_raise(what: BaseException):
     sync_raise(what)
 
 
-def sync_raise_signal(what, sleep):
+def sync_raise_signal(what: int, sleep):
     if sleep is not None:
         sleep(0.01)
     logging.info(f"signal {what}")
     os.kill(os.getpid(), what)
 
 
-async def async_raise_signal(what, sleep):
+async def async_raise_signal(what: int, sleep):
     await sleep(0.01)
     sync_raise_signal(what, None)
 
