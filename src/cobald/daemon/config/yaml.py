@@ -1,4 +1,5 @@
 from typing import Type, Tuple, Callable, TypeVar
+import pathlib
 
 from yaml import SafeLoader, nodes
 
@@ -12,7 +13,7 @@ R = TypeVar("R")
 
 
 def load_configuration(
-    path: str,
+    path: pathlib.Path,
     loader: Type[SafeLoader] = SafeLoader,
     plugins: Tuple[SectionPlugin, ...] = (),
 ):

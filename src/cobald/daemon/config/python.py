@@ -7,7 +7,7 @@ import itertools
 _unique_module_id = itertools.count()
 
 
-def load_configuration(path: str):
+def load_configuration(path: pathlib.Path):
     """
     Load a configuration from a module stored at ``path``
 
@@ -31,7 +31,7 @@ def load_configuration(path: str):
     #     3. execute the source to populate the module
     spec = importlib.util.spec_from_file_location(module_name, path)
     if spec is None:
-        extension = pathlib.Path(path).suffix
+        extension = path.suffix
         raise ValueError(f"Unrecognized file extension {extension} for config {path}")
     module = importlib.util.module_from_spec(spec)
     sys.modules[module_name] = module

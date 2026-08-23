@@ -1,6 +1,6 @@
 from typing import Any
-import os
 from contextlib import contextmanager
+import pathlib
 
 from yaml import SafeLoader
 from entrypoints import get_group_all as get_entrypoints
@@ -69,14 +69,14 @@ def load_section_plugins(entry_point_group: str) -> tuple[SectionPlugin, ...]:
 
 
 @contextmanager
-def load(config_path: str):
+def load(config_path: pathlib.Path):
     """
     Load a configuration and keep it alive for the given context
 
     :param config_path: path to a configuration file
     """
     # we bind the config to c to keep it alive
-    if os.path.splitext(config_path)[1] in (".yaml", ".yml"):
+    if config_path.suffix in (".yaml", ".yml"):
         add_constructor_plugins("cobald.config.yaml_constructors", COBalDLoader)
         config_plugins = load_section_plugins("cobald.config.sections")
         c = load_yaml_configuration(
@@ -84,12 +84,10 @@ def load(config_path: str):
             loader=COBalDLoader,  # type: ignore
             plugins=config_plugins,
         )
-    elif os.path.splitext(config_path)[1] == ".py":
+    elif config_path.suffix == ".py":
         c = load_python_configuration(config_path)
     else:
-        raise ValueError(
-            "Unknown configuration extension: %r" % os.path.splitext(config_path)[1]
-        )
+        raise ValueError(f"Unknown configuration extension: {config_path.suffix!r}")
     # yielded value used in tests, runtime does not use configuration result
     yield c
 
