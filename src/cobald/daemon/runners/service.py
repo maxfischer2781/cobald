@@ -67,7 +67,7 @@ class ServiceUnit:
         """Whether this specific service is running"""
         warnings.warn(
             DeprecationWarning(
-                f"'ServiceUnit.running' is deprecated and misleading, use '.started'"
+                "'ServiceUnit.running' is deprecated and misleading, use '.started'"
             ),
             stacklevel=2,
         )
@@ -82,8 +82,8 @@ def service(flavour: ModuleType) -> Callable[[type[S]], type[S]]:
     r"""
     Mark a class as implementing a Service
 
-    Each Service class must have a ``run`` method, which does not take any arguments.
-    The :py:class:`~.ServiceRunner` will automatically execute this concurrently when active.
+    Each Service class must have a ``run`` method taking no arguments.
+    The :py:class:`~.ServiceRunner` automatically executes this when active.
     """
 
     def service_unit_decorator(raw_cls: type[S]) -> type[S]:
@@ -137,7 +137,7 @@ class ServiceRunner:
     The service runner runs services and tracks their concurrent tasks
     to provide safe background concurrency.
     If any task fails with an exception or provides unexpected output values,
-    this is registered as an error; the runner will gracefully shut down all tasks in this case.
+    this is registered as an error and all tasks are gracefully shut down.
     """
 
     _exclusive_run = threading.Lock()
@@ -257,7 +257,7 @@ class ServiceRunner:
         unit.started = True
         self._logger.info("%s adopts %s", self.__class__.__name__, NameRepr(unit))
         if unit.flavour is asyncio:
-            # the task group keeps a strong reference to its tasks, we can forget about them
+            # the task group keeps tasks alive, we can forget about them
             asyncio_tg.create_task(service.run(), name=str(service))
         elif unit.flavour is threading:
             thread = threading.Thread(
