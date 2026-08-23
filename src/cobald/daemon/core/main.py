@@ -30,17 +30,15 @@ def run(configuration: str, level: str, target: str, short_format: bool):
     logger.debug(cobald.__about__.__file__)
     logger.info("Using configuration %s", configuration)
     logger.info("Starting daemon services...")
-    runtime.adopt(_load_services, configuration, flavour=asyncio)
-    runtime.accept()
+    asyncio.run(configured_services(configuration))
 
 
-async def _load_services(path: str):
+async def configured_services(path: str):
     """
-    Helper to load configured tasks once the runtime is ready and to hold objects alive
+    Asynchronously run configured services
     """
     with load(path):
-        # sleep indefinitely to wait until the runtime is aborted
-        await asyncio.sleep(float("inf"))
+        await runtime.run_services()
 
 
 def cli_run():
