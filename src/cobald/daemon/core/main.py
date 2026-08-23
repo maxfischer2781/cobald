@@ -16,7 +16,13 @@ from .config import load
 from .. import runtime
 
 
-def run(configuration: pathlib.Path, level: str, target: str, short_format: bool):
+def run(
+    configuration: pathlib.Path,
+    timeout: float | None,
+    level: str,
+    target: str,
+    short_format: bool,
+):
     """Run the daemon and all its services"""
     initialise_logging(level=level, target=target, short_format=short_format)
     logger = logging.getLogger(__package__)
@@ -31,15 +37,16 @@ def run(configuration: pathlib.Path, level: str, target: str, short_format: bool
     logger.debug(cobald.__about__.__file__)
     logger.info("Using configuration %s", configuration)
     logger.info("Starting daemon services...")
-    asyncio.run(configured_services(configuration))
+    asyncio.run(configured_services(configuration, timeout))
 
 
-async def configured_services(path: pathlib.Path):
+async def configured_services(path: pathlib.Path, timeout: float | None):
     """
     Asynchronously run configured services
     """
     with load(path):
-        await runtime.run_services()
+        async with asyncio.timeout(timeout):
+            await runtime.run_services()
 
 
 def cli_run():
@@ -47,6 +54,7 @@ def cli_run():
     options = CLI.parse_args()
     run(
         configuration=options.CONFIGURATION,
+        timeout=options.timeout,
         level=options.log_level,
         target=options.log_target,
         short_format=options.log_journal,
