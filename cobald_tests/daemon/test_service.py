@@ -3,38 +3,15 @@ import time
 import random
 import trio
 import asyncio
-import contextlib
 import logging
 import signal
 import os
-import gc
 
 import pytest
 
 from cobald.daemon.runners.service import ServiceRunner, service
 
 logging.getLogger().level = 10
-
-
-class TerminateRunner(Exception):
-    pass
-
-
-@contextlib.contextmanager
-def accept(payload: ServiceRunner, name):
-    gc.collect()
-    thread = threading.Thread(target=payload.accept, name=name, daemon=True)
-    thread.start()
-    if not payload.running.wait(1):
-        payload.shutdown()
-        raise RuntimeError(
-            f"{payload} failed to start (thread {thread}, all {threading.enumerate()})"
-        )
-    try:
-        yield
-    finally:
-        payload.shutdown()
-        thread.join(timeout=1)
 
 
 def sync_raise(what):
