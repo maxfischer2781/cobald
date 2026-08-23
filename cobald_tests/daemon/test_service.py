@@ -106,8 +106,11 @@ class TestServiceRunner(object):
         async def co_pingpong(what=default):
             return what
 
-        runner = ServiceRunner(accept_delay=0.1)
-        with accept(runner, name="test_execute"):
+        async def execute_payloads():
+            runner = ServiceRunner()
+            runner_task = asyncio.create_task(runner.run_services())
+            # let runner startup
+            await asyncio.sleep(0)
             # do not pass in values - receive default
             assert runner.execute(sub_pingpong, flavour=threading) == default
             assert runner.execute(co_pingpong, flavour=trio) == default
@@ -120,6 +123,9 @@ class TestServiceRunner(object):
             assert runner.execute(sub_pingpong, what=1, flavour=threading) == 1
             assert runner.execute(co_pingpong, what=2, flavour=trio) == 2
             assert runner.execute(co_pingpong, what=3, flavour=asyncio) == 3
+            runner_task.cancel()
+
+        asyncio.run(execute_payloads())
 
     def test_adopt(self):
         """Test running payloads asynchronously"""
