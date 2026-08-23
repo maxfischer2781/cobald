@@ -157,7 +157,7 @@ class TestServiceRunner(object):
                 await asyncio.sleep(0.05)
                 if len(reply_store) == 9:
                     assert reply_store.count(default) == 3
-                    assert set(reply_store) == {default} | set(range(1, 7))
+                    assert set(reply_store) == {default, *range(1, 7)}
                     break
             else:
                 assert False, "tasks were not adopeted/run in the background"
