@@ -16,14 +16,13 @@ from ..debug import NameRepr
 T = TypeVar("T")
 
 
-def _weakset_copy(ws: "weakref.WeakSet[T]") -> set[T]:
-    """Thread-safely copy all items from a weakset to a set"""
-    # The various WeakSet methods are not thread-safe because they miss locking.
-    # The main issue is that all copy approaches use ``__iter__``, which is not
-    # thread-safe against items being garbage collected. However, we can access
-    # the actual backing real set ``ws.data`` and ``set(some_set)`` is GIL-atomic.
-    refs: "set[weakref.ReferenceType[T]]" = set(ws.data)
-    return {item for item in (ref() for ref in refs) if item is not None}
+def _weakdict_values(wd: "weakref.WeakKeyDictionary[Any, T]") -> set[T]:
+    """Thread-safely copy all values from a weakset to a set"""
+    # The WeakXYZ methods are not thread-safe because they miss locking until py3.14.
+    # See https://github.com/python/cpython/issues/123089 and related.
+    # Directly copy the underlying data-dict as this is GIL-atomic.
+    items: "set[tuple[weakref.ReferenceType[Any], T]]" = set(wd.data.copy().items())
+    return {value for kref, value in items if kref() is not None}
 
 
 class Service(Protocol):
@@ -45,7 +44,7 @@ class ServiceUnit:
     :param flavour: runner flavour to use for running the service
     """
 
-    __defined_units__: "weakref.WeakSet[ServiceUnit]" = weakref.WeakSet()
+    __defined_units__: "weakref.WeakKeyDictionary[Service, ServiceUnit]" = weakref.WeakKeyDictionary()
 
     def __init__(self, service: Service, flavour: ModuleType):
         assert hasattr(service, "run"), "service must implement a 'run' method"
@@ -54,13 +53,13 @@ class ServiceUnit:
         #: whether the unit was ever started
         self.started = False
         # make the unit visible to the service runner(s)
-        ServiceUnit.__defined_units__.add(self)
+        ServiceUnit.__defined_units__[service] = self
         ServiceRunner.notify(self)
 
     @classmethod
     def units(cls) -> "set[ServiceUnit]":
         """Container of all currently defined units"""
-        return _weakset_copy(cls.__defined_units__)
+        return _weakdict_values(cls.__defined_units__)
 
     @property
     def running(self) -> bool:
@@ -94,8 +93,7 @@ def service(flavour: ModuleType) -> Callable[[type[S]], type[S]]:
                 self = __new__(cls)
             else:
                 self = __new__(cls, *args, **kwargs)
-            service_unit = ServiceUnit(self, flavour)
-            self.__service_unit__ = service_unit
+            _ = ServiceUnit(self, flavour)
             return self
 
         raw_cls.__new__ = __new_service__
