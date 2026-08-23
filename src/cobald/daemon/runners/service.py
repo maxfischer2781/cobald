@@ -149,9 +149,11 @@ class ServiceRunner:
     # Only spawn the runner if needed, which is hopefully never
     def _get_runner(self) -> MetaRunner:
         if self._meta_runner is None:
+            assert self._state is not None, "runner must 'run_services' to manage legacy runner lifetime"
             self._meta_runner = MetaRunner()
             thread = threading.Thread(target=self._monitor_run, args=(self._meta_runner.run,), daemon=True)
             thread.start()
+            self._meta_runner.running.wait()
         return self._meta_runner
 
     def execute(
