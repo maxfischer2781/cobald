@@ -38,8 +38,11 @@ async def async_raise_signal(what: int, sleep):
 class TestServiceRunner(object):
     def test_unique_runner(self):
         """Assert that no two runners may run services"""
+
         async def run_services_twice():
-            return await asyncio.gather(ServiceRunner().run_services(), ServiceRunner().run_services())
+            return await asyncio.gather(
+                ServiceRunner().run_services(), ServiceRunner().run_services()
+            )
 
         with pytest.raises(RuntimeError):
             asyncio.run(run_services_twice())
