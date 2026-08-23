@@ -44,7 +44,9 @@ class ServiceUnit:
     :param flavour: runner flavour to use for running the service
     """
 
-    __defined_units__: "weakref.WeakKeyDictionary[Service, ServiceUnit]" = weakref.WeakKeyDictionary()
+    __defined_units__: "weakref.WeakKeyDictionary[Service, ServiceUnit]" = (
+        weakref.WeakKeyDictionary()
+    )
 
     def __init__(self, service: Service, flavour: ModuleType):
         assert hasattr(service, "run"), "service must implement a 'run' method"
