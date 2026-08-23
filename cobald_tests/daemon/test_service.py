@@ -156,7 +156,7 @@ class TestServiceRunner(object):
     def test_error_reporting(self, flavour, do_sleep, do_raise):
         """Test that fatal errors do not pass silently"""
         # errors should fail the entire runtime
-        runner = ServiceRunner(accept_delay=0.1)
+        runner = ServiceRunner()
         runner.adopt(do_sleep, 5, flavour=flavour)
         runner.adopt(do_raise, LookupError, flavour=flavour)
         with pytest.raises(ExceptionGroup):
@@ -172,7 +172,7 @@ class TestServiceRunner(object):
     )
     def test_interrupt(self, flavour, do_sleep, do_raise):
         """Test that KeyboardInterrupt/^C is graceful shutdown"""
-        runner = ServiceRunner(accept_delay=0.1)
+        runner = ServiceRunner()
         runner.adopt(do_sleep, 5, flavour=flavour)
         # signal.SIGINT == KeyboardInterrupt
         runner.adopt(do_raise, signal.SIGINT, do_sleep, flavour=flavour)

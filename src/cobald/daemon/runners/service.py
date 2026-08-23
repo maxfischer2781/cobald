@@ -144,6 +144,11 @@ class ServiceRunner:
     _running_instance: "ServiceRunner | None" = None
 
     def __init__(self, accept_delay: float = 1):
+        if accept_delay != 1:
+            warnings.warn(
+                DeprecationWarning("'accept_delay' is deprecated and no longer used"),
+                stacklevel=2,
+            )
         self._logger = logging.getLogger("cobald.runtime.daemon.services")
         self._state: RunningState | None = None
         self._meta_runner: MetaRunner | None = None
