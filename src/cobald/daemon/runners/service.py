@@ -108,6 +108,7 @@ def service(flavour: ModuleType) -> Callable[[type[S]], type[S]]:
 
 class RunningState(NamedTuple):
     """State of an active :py:class:`~.ServiceRunner`"""
+
     #: the loop in which the runner is active
     loop: asyncio.AbstractEventLoop
     #: service tasks spawned by the runner
@@ -123,7 +124,9 @@ class RunningState(NamedTuple):
         async with self.tasks:
             yield self
 
-    def put_threadsafe(self, message: tuple[ServiceUnit, None] | tuple[None, BaseException]) -> None:
+    def put_threadsafe(
+        self, message: tuple[ServiceUnit, None] | tuple[None, BaseException]
+    ) -> None:
         self.loop.call_soon_threadsafe(self.interrupts.put_nowait, message)
 
 
@@ -149,9 +152,13 @@ class ServiceRunner:
     # Only spawn the runner if needed, which is hopefully never
     def _get_runner(self) -> MetaRunner:
         if self._meta_runner is None:
-            assert self._state is not None, "runner must 'run_services' to manage legacy runner lifetime"
+            assert (
+                self._state is not None
+            ), "runner must 'run_services' to manage legacy runner lifetime"
             self._meta_runner = MetaRunner()
-            thread = threading.Thread(target=self._monitor_run, args=(self._meta_runner.run,), daemon=True)
+            thread = threading.Thread(
+                target=self._monitor_run, args=(self._meta_runner.run,), daemon=True
+            )
             thread.start()
             self._meta_runner.running.wait()
         return self._meta_runner
@@ -253,7 +260,9 @@ class ServiceRunner:
             # the task group keeps a strong reference to its tasks, we can forget about them
             asyncio_tg.create_task(service.run(), name=str(service))
         elif unit.flavour is threading:
-            thread = threading.Thread(target=self._monitor_run, args=(service.run,), daemon=True)
+            thread = threading.Thread(
+                target=self._monitor_run, args=(service.run,), daemon=True
+            )
             thread.run()
         elif unit.flavour is trio:
             warnings.warn(
