@@ -37,7 +37,10 @@ def run(
     logger.debug(cobald.__about__.__file__)
     logger.info("Using configuration %s", configuration)
     logger.info("Starting daemon services...")
-    asyncio.run(configured_services(configuration, timeout))
+    try:
+        asyncio.run(configured_services(configuration, timeout))
+    except asyncio.TimeoutError:
+        logger.info("Stopped daemon services...")
 
 
 async def configured_services(path: pathlib.Path, timeout: float | None):
