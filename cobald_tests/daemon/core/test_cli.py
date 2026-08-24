@@ -16,8 +16,8 @@ def test_daemon_cli():
                 """)
         start_time = time.monotonic()
         subprocess.check_call(
-            [sys.executable, '-m', 'cobald.daemon', config.name, '--timeout', '0.5']
+            [sys.executable, "-m", "cobald.daemon", config.name, "--timeout", "0.5"]
         )
-        duration = time.monotonic() -  start_time
+        duration = time.monotonic() - start_time
         assert duration >= 0.5, "daemon ran shorter than expected"
         assert duration <= 1.0, "daemon ran longer than expected"
