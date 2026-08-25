@@ -1,3 +1,4 @@
+from types import ModuleType
 import threading
 import time
 import random
@@ -61,6 +62,42 @@ class TestServiceRunner(object):
                 nonlocal replies
                 replies += 1
                 self.done.set()
+
+        async def run_services_automatically():
+            pre_created = Service()
+            runner_task = asyncio.create_task(ServiceRunner().run_services())
+            async with asyncio.timeout(1):
+                await pre_created.done.wait()
+                assert replies == 1, "pre-created service did not run"
+                late_created = Service()
+                await late_created.done.wait()
+                assert replies == 2, "late-created service did not run"
+            runner_task.cancel()
+
+        asyncio.run(run_services_automatically())
+
+    @pytest.mark.parametrize("flavour", [threading, trio])
+    def test_service_execution_foreign(self, flavour: ModuleType):
+        """Test that service instances are run automatically"""
+        replies = 0
+
+        @service(flavour=flavour)
+        class Service(object):
+            def __init__(self):
+                self.loop = asyncio.get_running_loop()
+                self.done = asyncio.Event()
+                self.done.clear()
+
+            def _run(self):
+                nonlocal replies
+                replies += 1
+                self.loop.call_soon_threadsafe(self.done.set)
+
+            if flavour is trio:
+                async def run(self):
+                    self._run()
+            else:
+                run = _run
 
         async def run_services_automatically():
             pre_created = Service()
