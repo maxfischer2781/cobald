@@ -273,7 +273,7 @@ class ServiceRunner:
                 ),
                 stacklevel=2,
             )
-            raise NotImplementedError("TODO")
+            self._get_runner().register_payload(service.run, flavour=trio)
 
     def _monitor_run(self, payload: Callable[[], None]) -> None:
         """Run `payload` synchronously and report any failures"""
