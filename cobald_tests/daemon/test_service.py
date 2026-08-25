@@ -94,8 +94,10 @@ class TestServiceRunner(object):
                 self.loop.call_soon_threadsafe(self.done.set)
 
             if flavour is trio:
+
                 async def run(self):
                     self._run()
+
             else:
                 run = _run
 
