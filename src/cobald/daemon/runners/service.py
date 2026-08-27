@@ -176,7 +176,7 @@ class ServiceRunner:
         """
         warnings.warn(
             DeprecationWarning(
-                f"'runtime.execute' is deprecated, directly use '{flavour.__name__}'"
+                f"'runtime.execute' is deprecated, directly use {flavour.__name__!r}"
             ),
             stacklevel=2,
         )
@@ -195,7 +195,7 @@ class ServiceRunner:
         """
         warnings.warn(
             DeprecationWarning(
-                f"'runtime.execute' is deprecated, directly use '{flavour.__name__}'"
+                f"'runtime.execute' is deprecated, directly use {flavour.__name__!r}"
             ),
             stacklevel=2,
         )

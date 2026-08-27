@@ -22,7 +22,7 @@ class AsyncioRunner(BaseRunner):
     def __init__(self, asyncio_loop: asyncio.AbstractEventLoop):
         warnings.warn(
             DeprecationWarning(
-                f"'AsyncioRunner' is deprecated, directly use 'asyncio'"
+                "'AsyncioRunner' is deprecated, directly use 'asyncio'"
             ),
             stacklevel=2,
         )

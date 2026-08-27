@@ -23,7 +23,7 @@ class MetaRunner(object):
     def __init__(self):
         warnings.warn(
             DeprecationWarning(
-                f"'MetaRunner' is deprecated, directly use the concurrency frameworks"
+                "'MetaRunner' is deprecated, directly use the concurrency frameworks"
             ),
             stacklevel=2,
         )

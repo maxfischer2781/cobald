@@ -25,7 +25,7 @@ class TrioRunner(BaseRunner):
     def __init__(self, asyncio_loop: asyncio.AbstractEventLoop):
         warnings.warn(
             DeprecationWarning(
-                f"'TrioRunner' is deprecated, directly use 'asyncio' instead"
+                "'TrioRunner' is deprecated, directly use 'asyncio' instead"
             ),
             stacklevel=2,
         )

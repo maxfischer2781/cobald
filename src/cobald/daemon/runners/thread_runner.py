@@ -21,7 +21,7 @@ class ThreadRunner(BaseRunner):
     def __init__(self, asyncio_loop: asyncio.AbstractEventLoop):
         warnings.warn(
             DeprecationWarning(
-                f"'ThreadRunner' is deprecated, directly use 'threading'"
+                "'ThreadRunner' is deprecated, directly use 'threading'"
             ),
             stacklevel=2,
         )
