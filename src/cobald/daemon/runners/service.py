@@ -176,7 +176,7 @@ class ServiceRunner:
         """
         warnings.warn(
             DeprecationWarning(
-                f"'runtime.execute' is deprecated, directly use {flavour.__name__}"
+                f"'runtime.execute' is deprecated, directly use '{flavour.__name__}'"
             ),
             stacklevel=2,
         )
@@ -195,7 +195,7 @@ class ServiceRunner:
         """
         warnings.warn(
             DeprecationWarning(
-                f"'runtime.execute' is deprecated, directly use {flavour.__name__}"
+                f"'runtime.execute' is deprecated, directly use '{flavour.__name__}'"
             ),
             stacklevel=2,
         )
@@ -269,7 +269,7 @@ class ServiceRunner:
         elif unit.flavour is trio:
             warnings.warn(
                 DeprecationWarning(
-                    f"trio services are deprecated, please use asyncio for {unit}"
+                    f"'trio' services are deprecated, please use 'asyncio' for {unit}"
                 ),
                 stacklevel=2,
             )
