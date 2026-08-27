@@ -54,9 +54,6 @@ class ServiceUnit:
         self.flavour = flavour
         #: whether the unit was ever started
         self.started = False
-        # make the unit visible to the service runner(s)
-        ServiceUnit.__defined_units__[service] = self
-        ServiceRunner.notify(self)
 
     @classmethod
     def units(cls) -> "set[ServiceUnit]":
@@ -95,7 +92,9 @@ def service(flavour: ModuleType) -> Callable[[type[S]], type[S]]:
                 self = __new__(cls)
             else:
                 self = __new__(cls, *args, **kwargs)
-            _ = ServiceUnit(self, flavour)
+            # make the unit visible to the service runner(s)
+            ServiceUnit.__defined_units__[self] = unit = ServiceUnit(self, flavour)
+            ServiceRunner.notify(unit)
             return self
 
         raw_cls.__new__ = __new_service__
