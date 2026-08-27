@@ -21,9 +21,7 @@ class AsyncioRunner(BaseRunner):
     # takes care of adding/removing tasks.
     def __init__(self, asyncio_loop: asyncio.AbstractEventLoop):
         warnings.warn(
-            DeprecationWarning(
-                "'AsyncioRunner' is deprecated, directly use 'asyncio'"
-            ),
+            DeprecationWarning("'AsyncioRunner' is deprecated, directly use 'asyncio'"),
             stacklevel=2,
         )
         super().__init__(asyncio_loop)
